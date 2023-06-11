@@ -19,8 +19,8 @@ public class Constant {
      */
     public static final String monsterImagePath = "/鸟2.png";
 
-    public static final String  userAttackImageLeft ="/恐龙gj.png";
-    public static final String  userAttackImageRight ="/恐龙gj2.png";
+    public static final String  userAttackImageLeft ="/a1-L2.png";
+    public static final String  userAttackImageRight ="/a1-R2.png";
 
     /**
      * 技能图片
@@ -31,10 +31,14 @@ public class Constant {
      * 小怪动作
      */
     public static final List<String> actionList = Arrays.asList("/鸟1.png"  ,"/鸟2.png");
-    public static final List<String> userRichtList = Arrays.asList("/恐龙1.png"  ,"/恐龙2.png","/恐龙3.png","/恐龙a.png","/恐龙b.png");
-    public static final List<String>  userLeftList = Arrays.asList("/f/恐龙1.png"  ,"/f/恐龙2.png","/f/恐龙3.png","/f/恐龙a.png","/f/恐龙b.png");
+    public static final List<String> userRichtList = Arrays.asList("/吕布1.png"  ,"/吕布2.png","/吕布3.png","/吕布4.png","/吕布5.png","/吕布6.png","/吕布7.png","/吕布8.png");
+    public static final List<String> userLeftList = Arrays.asList("/吕布L1.png"  ,"/吕布L2.png","/吕布L3.png","/吕布L4.png","/吕布L5.png","/吕布L6.png","/吕布L7.png","/吕布L8.png");
 
+    public static final List<String> userAttackLeftList = Arrays.asList("/a1-L0.png"  ,"/a1-L1.png","/a1-L2.png","/a1-L3.png","/a1-L4.png");
+    public static final List<String> userAttackRightList = Arrays.asList("/a1-R0.png"  ,"/a1-R1.png","/a1-R2.png","/a1-R3.png","/a1-R4.png");
 
+    public static final String slideLeft="/a1-L4.png";
+    public static final String slideRight="/a1-R4.png"
 
 
     /**

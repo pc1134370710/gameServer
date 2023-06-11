@@ -76,6 +76,12 @@ public class RoomServer {
         checkUserAttack();
         // 玩家状态检测， 以及恢复MP 蓝条
         recoverMpAndCheckUserStatus();
+
+        // 随机boss
+
+
+        // 服务器集群通信
+
         // 检测房间可用
         checkRoom();
 

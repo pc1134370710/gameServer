@@ -4,6 +4,7 @@ import com.pc.common.Constant;
 import lombok.Data;
 
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @description: 用户角色数据包
@@ -97,21 +98,34 @@ public class UserRoleMsgData {
         return attack;
     }
 
+//    public Rectangle rectangle() {
+//        if(attack!=null && !attack){
+//            // 非攻击状态下
+//            return new Rectangle(userX,userY-8,40,50);
+//        }
+//        else{
+//            if(direction>0){
+//                // 往右边
+//                return new Rectangle(userX,userY-8,64,50);
+//            }else{
+//                // 往左边
+//                return new Rectangle(userX-25,userY-8,64,50);
+//            }
+//        }
+//    }
     public Rectangle rectangle() {
         if(attack!=null && !attack){
-            // 非攻击状态下
-            return new Rectangle(userX,userY-8,40,50);
+            return new Rectangle(userX,userY-8,45,130);
         }
         else{
             if(direction>0){
                 // 往右边
-                return new Rectangle(userX,userY-8,64,50);
+                return new Rectangle(userX-35,userY-8,200,130);
             }else{
                 // 往左边
-                return new Rectangle(userX-25,userY-8,64,50);
+                return new Rectangle(userX-112,userY-8,200,130);
             }
         }
     }
-
 
 }

@@ -20,7 +20,14 @@ public class ImageUtils {
             throw new RuntimeException(e);
         }
     }
-
+    public static BufferedImage getImageFromResourcesLb(String imgName) {
+        URL url = ImageUtils.class.getClassLoader().getResource("image" + imgName);
+        try {
+            return ImageIO.read(url);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static void main(String[] args) {
         ImageUtils.getImageFromResources(Constant.gameImagePath);
     }

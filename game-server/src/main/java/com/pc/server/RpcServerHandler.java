@@ -95,21 +95,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
             roomServer.getUser().put(userModel.getUserId(), userModel);
 
             // 刷新房间数据, todo 通知房间内的用户，当前进来多少人了
-//            List<RoomMsgData> list = new ArrayList<>();
-//            RpcNettyServer.roomServerMap.values().forEach(a->{
-//                RoomMsgData roomMsgData = new RoomMsgData();
-//                roomMsgData.setRoomId(a.getId());
-//                roomMsgData.setMaxUserSize(a.getMaxUserSize());
-//                roomMsgData.setUserSize(a.getUser().size());
-//                roomMsgData.setFullUser(a.getUser().size() == a.getMaxUserSize());
-//                roomMsgData.setStartGame(a.getIsOK().get());
-//                list.add(roomMsgData);
-//            });
-//            Msg m = new Msg();
-//            m.setCmd(ServerCmd.INIT_ROOM.getValue());
-//            m.setData(JSON.toJSONString(list));
-//            roomServer.putMsg(m);
-//            channelHandlerContext.writeAndFlush(RpcProtocol.getRpcProtocol(m));
             return;
         }
 
