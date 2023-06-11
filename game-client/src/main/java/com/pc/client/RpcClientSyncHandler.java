@@ -135,6 +135,14 @@ public class RpcClientSyncHandler extends SimpleChannelInboundHandler<RpcProtoco
             stringSkillModelMap.remove(skillMsgData.getSkillId());
             return;
         }
+        // 用户释放滑行技能
+        if(msg.getCmd() == ServerCmd.SERVER_USER_SLIDE.getValue()){
+            Map<String, UserRoleModel> userRoleModelMap = LocalGameInfo.userRoleModelMap;
+            UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
+            UserRoleModel userRoleModel = userRoleModelMap.get(userRoleMoveMsgData.getUserId());
+            userRoleModel.analysisMsg(userRoleMoveMsgData);
+            return;
+        }
 
         // 初始化房间信息
         if(msg.getCmd() == ServerCmd.INIT_ROOM.getValue()){

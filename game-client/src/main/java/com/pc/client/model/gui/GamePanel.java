@@ -181,8 +181,6 @@ public class GamePanel extends JPanel implements KeyListener {
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
             UserRoleMsgData userRoleMsgData = new UserRoleMsgData();
             userRoleMsgData.setAttack(false);
-//            userRoleMsgData.setUserX(userRoleModel.getX());
-//            userRoleMsgData.setUserY(userRoleModel.getY());
             userRoleMsgData.setUserId(userRoleModel.getUserId());
             Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.value, userRoleModel.getUserId(), userRoleMsgData);
             msg.setRoomId(LocalGameInfo.roomId);
@@ -198,15 +196,30 @@ public class GamePanel extends JPanel implements KeyListener {
             Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.value, userRoleModel.getUserId(), userRoleMsgData);
             msg.setRoomId(LocalGameInfo.roomId);
             LocalGameInfo.client.sendMsg(msg);
+        }
+
+        // 滑行
+        if(code == KeyEvent.VK_L){
+            UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
+            if(userRoleModel.getMp()>=50) {
+                // 释放完技能客户端归0
+                userRoleModel.setMp(userRoleModel.getMp() - 50);
+                UserRoleMsgData userRoleMsgData = new UserRoleMsgData();
+                userRoleMsgData.setSlide(true);
+                userRoleMsgData.setUserId(userRoleModel.getUserId());
+                Msg msg = Msg.getMsg(ServerCmd.USER_SLIDE.value, userRoleModel.getUserId(), userRoleMsgData);
+                msg.setRoomId(LocalGameInfo.roomId);
+                LocalGameInfo.client.sendMsg(msg);
+            }
 
         }
 
         // 释放技能
         if(code == KeyEvent.VK_K){
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            if(userRoleModel.getMp()>=Constant.userRoleMP){
+            if(userRoleModel.getMp()>=50){
                 // 释放完技能客户端归0
-                userRoleModel.setMp(0);
+                userRoleModel.setMp(userRoleModel.getMp()-50);
                 SkillMsgData skillMsgData = new SkillMsgData();
                 skillMsgData.setUserId(LocalGameInfo.userId);
                 Msg msg = Msg.getMsg(ServerCmd.USER_ROLE_SKILL.getValue(), LocalGameInfo.userId, skillMsgData);

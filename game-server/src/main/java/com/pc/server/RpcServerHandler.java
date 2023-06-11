@@ -124,7 +124,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
             roomServer.getSkillMsgDataMap().put(skillMsgData.getSkillId(),skillMsgData);
             // 用户mp 归0， 发送刷新消息
 
-            userModel.getUserRoleMsgData().setMp(0);
+            userModel.getUserRoleMsgData().setMp(userModel.getUserRoleMsgData().getMp()-50);
             Msg msg1 = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), userModel.getUserId(), userModel.getUserRoleMsgData());
             roomServer.putMsg(msg1);
             // 通知其他人，有人释放技能了
@@ -132,6 +132,26 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
             roomServer.putMsg(msg);
             return;
         }
+
+        // 收到玩家滑行技能
+        if(msg.getCmd() == ServerCmd.USER_SLIDE.getValue()){
+            RoomServer roomServer = RpcNettyServer.roomServerMap.get(msg.getRoomId());
+            // 存储技能
+            UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
+            // 设置该用户的 攻击状态
+            UserModel userModel = roomServer.getUser().get(userRoleMoveMsgData.getUserId());
+            userModel.analysisMsg(userRoleMoveMsgData);
+            // 蓝条归0
+            userModel.getUserRoleMsgData().setMp(userModel.getUserRoleMsgData().getMp()-50);
+            Msg msg1 = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), userModel.getUserId(), userModel.getUserRoleMsgData());
+            roomServer.putMsg(msg1);
+
+            Msg msg2 = Msg.getMsg(ServerCmd.SERVER_USER_SLIDE.getValue(), userModel.getUserId(), userModel.getUserRoleMsgData());
+            // 通知其他人，玩家滑行技能
+            roomServer.putMsg(msg2);
+            return;
+        }
+
         // 普通攻击
         if(msg.getCmd() == ServerCmd.USER_ATTACK.getValue()){
             RoomServer roomServer = RpcNettyServer.roomServerMap.get(msg.getRoomId());

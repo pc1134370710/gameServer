@@ -141,11 +141,9 @@ public class UserRoleModel  extends BasicModel {
         // todo 已经死亡了， 不在移动， 图片变换为死亡图片
         if(isOver.get()){
             this.gameGraphics2D.setColor(Color.red);
-            this.gameGraphics2D.drawString("玩家:"+this.userId+"gg了",this.X  ,this.Y);
+            this.gameGraphics2D.drawString("玩家:"+this.userId+" gg了",this.X  ,this.Y);
             return;
         }
-
-
 
 
         // 加载

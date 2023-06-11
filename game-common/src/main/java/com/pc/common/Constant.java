@@ -38,13 +38,17 @@ public class Constant {
     public static final List<String> userAttackRightList = Arrays.asList("/a1-R0.png"  ,"/a1-R1.png","/a1-R2.png","/a1-R3.png","/a1-R4.png");
 
     public static final String slideLeft="/a1-L4.png";
-    public static final String slideRight="/a1-R4.png"
+    public static final String slideRight="/a1-R4.png";
 
 
     /**
      * 玩家移动速度
      */
     public static final int userRoleSpeed=3;
+    /**
+     * 滑行
+     */
+    public static final int SELIDE_SEPEDD=200;
     /**
      * 技能血量
      */

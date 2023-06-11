@@ -23,6 +23,10 @@ public enum ServerCmd {
     REFRESH_USER_INFO(207,"刷新用户信息， 血量，蓝条"),
     EXIT_GAME(208,"退出游戏，即退出房间"),
 
+    USER_SLIDE(209,"用户滑行 "),
+    SERVER_USER_SLIDE(210,"服务响应客户端，用户滑行 "),
+
+
     INIT_ROOM(400,"初始化房间，命令"),
     GET_ALL_ROOM(401,"获取所有邮箱游戏房间命令")
     ,

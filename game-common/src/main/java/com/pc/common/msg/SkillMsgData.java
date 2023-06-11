@@ -61,9 +61,8 @@ public class SkillMsgData {
         this.x += speed * isLeftMove;
     }
 
-    public Rectangle rectangle() {
+    public  Rectangle rectangle() {
         // 这里的x y 是
-        return new Rectangle(this.x,this.y,35,36);
+        return new Rectangle(this.x,this.y,65,75);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.pc.server;
 
+import com.pc.common.Constant;
 import com.pc.common.msg.UserRoleMsgData;
 import io.netty.channel.Channel;
 import lombok.Data;
@@ -57,6 +58,16 @@ public class UserModel {
         if(userRoleMoveMsgData.getDirection()!=null){
             this.getUserRoleMsgData().setDirection(userRoleMoveMsgData.getDirection());
         }
+
+        if(userRoleMoveMsgData.getSlide() != null){
+            this.getUserRoleMsgData().setSlide(userRoleMoveMsgData.getSlide());
+            // 如果是滑行
+            if(userRoleMoveMsgData.getSlide()){
+                int k = Constant.SELIDE_SEPEDD * this.getUserRoleMsgData().getDirection();
+                this.getUserRoleMsgData().setUserX(this.getUserRoleMsgData().getUserX()+ k);
+            }
+        }
+
     }
 
 
