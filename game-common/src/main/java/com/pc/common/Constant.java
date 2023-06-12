@@ -11,6 +11,7 @@ import java.util.List;
 public class Constant {
 
     /**
+     *
      *  游戏背景
      */
     public static final String gameImagePath = "/背景.png";
