@@ -37,6 +37,18 @@
             同时检查技能阻塞队列中的 技能是否已经失效（越界了）， 失效了发送数据告诉所有客户端，技能失效
 
 
+服务器集群设计理念
+
+    游戏服务器设计集群， 跟一般的web 应用不一样， 因为房间内的数据不太可能 同步到别的机子在发送给别的用户
+    
+    所以， 应该是还要在加一层服务， 用来接受玩家的socket 长链接，  然后转发到 对应的房间中。
+    这样子 中间服务（只维护玩家连接） ，就可以负载均衡水平扩展，支撑很大的用户连接
+
+    玩家 ----- > 只维护玩家的连接服务（鉴权，房间路由）  -----> 房间
+    
+    
+
+
 启动命令 
 
 nohup java -Dloader.path=/home/gameServer/lib,/home/gameServer/resources -jar /home/gameServer/game-server-1.0-SNAPSHOT.jar   > /home/Servernohup.out 2>&1 &
