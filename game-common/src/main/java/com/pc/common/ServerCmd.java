@@ -9,7 +9,7 @@ public enum ServerCmd {
     INIT_NPC(1001,"初始化小怪"),
     NPC_MOVE(1002,"小怪移动"),
 
-    INIT_USER_OK(200, "玩家进入房间等待游戏"),
+    USER_INTO_ROOM(200, "玩家进入房间等待游戏"),
 
     START_GAME(201,"初始化用户角色，开始游戏"),
 
@@ -23,7 +23,7 @@ public enum ServerCmd {
     REFRESH_USER_INFO(207,"刷新用户信息， 血量，蓝条"),
     EXIT_GAME(208,"退出游戏，即退出房间"),
 
-    USER_FLASH(209,"用户滑行 "),
+    USER_FLASH(209,"用户闪现 "),
 
 
     INIT_ROOM(400,"初始化房间，命令"),

@@ -86,8 +86,10 @@ public class MainClient {
                     }).start();
 
                     roomPanel.setGameFrame(gameFrame);
+                    LocalGameInfo.gamePanel = gamePanel;
+                    LocalGameInfo.roomPanel = roomPanel;
                     // 启动游戏客户端
-                    LocalGameInfo.client = new Client(gamePanel,roomPanel);
+                    LocalGameInfo.client = new Client();
 
                     Msg msg = new Msg();
                     msg.setCmd(ServerCmd.GET_ALL_ROOM.getValue());

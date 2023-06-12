@@ -1,10 +1,8 @@
 package com.pc.client;
 
 import com.alibaba.fastjson.JSON;
-import com.pc.client.cmd.CmdHandler;
+import com.pc.common.cmd.CmdHandler;
 import com.pc.client.cmd.ClientCmdHandleFactory;
-import com.pc.client.gui.GamePanel;
-import com.pc.client.gui.RoomPanel;
 import com.pc.common.RpcProtocol;
 import com.pc.common.msg.*;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,17 +22,10 @@ import org.apache.logging.log4j.Logger;
 public class RpcClientSyncHandler extends SimpleChannelInboundHandler<RpcProtocol> {
 
     private Logger log = LogManager.getLogger(RpcClientSyncHandler.class);
-    /**
-     * 游戏面板
-     */
-    private GamePanel gamePanel;
-    private RoomPanel roomPanel;
 
 
+    public RpcClientSyncHandler(){
 
-    public RpcClientSyncHandler( GamePanel gamePanel,RoomPanel roomPanel){
-        this.gamePanel= gamePanel;
-        this.roomPanel= roomPanel;
 
     }
 
@@ -68,7 +59,7 @@ public class RpcClientSyncHandler extends SimpleChannelInboundHandler<RpcProtoco
             log.warn("无效命令字, {}",msg.getCmd());
             return;
         }
-        cmdHandle.doHandle(msg,gamePanel,roomPanel);
+        cmdHandle.doHandle(msg);
 
     }
 

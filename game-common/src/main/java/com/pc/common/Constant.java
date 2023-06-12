@@ -46,7 +46,7 @@ public class Constant {
      */
     public static final int userRoleSpeed=3;
     /**
-     * 滑行
+     * 闪现
      */
     public static final int SELIDE_SEPEDD=200;
     /**

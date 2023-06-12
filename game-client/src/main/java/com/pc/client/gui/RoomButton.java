@@ -70,7 +70,7 @@ public class RoomButton  extends JButton  implements MouseListener{
             roomPanel.getGameFrame().setTitle("玩家：" + LocalGameInfo.userId +"， 房间："+roomId);
 
             Msg msg = new Msg();
-            msg.setCmd(ServerCmd.INIT_USER_OK.value);
+            msg.setCmd(ServerCmd.USER_INTO_ROOM.value);
             msg.setUserId(LocalGameInfo.userId);
             msg.setRoomId(roomId);
             LocalGameInfo.client.sendMsg(msg);

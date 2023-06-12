@@ -1,6 +1,7 @@
 package com.pc.client.cmd;
 import com.pc.client.cmd.impl.*;
 import com.pc.common.ServerCmd;
+import com.pc.common.cmd.CmdHandler;
 
 import java.util.HashMap;
 import java.util.Map;

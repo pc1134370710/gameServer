@@ -1,9 +1,7 @@
 package com.pc.client.cmd.impl;
 
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.client.cmd.CmdHandler;
-import com.pc.client.gui.GamePanel;
-import com.pc.client.gui.RoomPanel;
+import com.pc.common.cmd.CmdHandler;
 import com.pc.common.msg.Msg;
 
 /**
@@ -13,7 +11,7 @@ import com.pc.common.msg.Msg;
  */
 public class ExitGameCmdHandler  implements CmdHandler {
     @Override
-    public void doHandle(Msg msg, GamePanel gamePanel, RoomPanel roomPanel) {
+    public void doHandle(Msg msg) {
         // 移除该用户
         LocalGameInfo.userRoleModelMap.remove(msg.getUserId());
     }

@@ -1,6 +1,8 @@
 package com.pc.client.cache;
 
 import com.pc.client.Client;
+import com.pc.client.gui.GamePanel;
+import com.pc.client.gui.RoomPanel;
 import com.pc.client.model.NpcMonster;
 import com.pc.client.model.SkillModel;
 import com.pc.client.model.UserRoleModel;
@@ -59,6 +61,9 @@ public class LocalGameInfo {
     public volatile static  JFrame roomJFrame;
 
     public volatile static JFrame gameFrame;
+
+    public volatile static GamePanel gamePanel;
+    public volatile static RoomPanel roomPanel;
 
 
     public static void clear(){

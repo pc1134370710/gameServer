@@ -191,7 +191,7 @@ public class GamePanel extends JPanel implements KeyListener {
             LocalGameInfo.client.sendMsg(msg);
         }
 
-        // 滑行
+        // 闪现
         if(code == KeyEvent.VK_L){
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
             if(userRoleModel.getMp()>=50) {

@@ -20,15 +20,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  */
 public class Client {
 
-    /**
-     * 游戏面板
-     */
-    private GamePanel gamePanel;
-
-    /**
-     * 房间面板
-     */
-    private RoomPanel roomPanel;
 
     /**
      * 游戏通信连接管道
@@ -42,9 +33,8 @@ public class Client {
 
     private EventLoopGroup clientGroup = new NioEventLoopGroup();
 
-    public Client(GamePanel gamePanel,RoomPanel roomPanel) {
-        this.gamePanel = gamePanel;
-        this.roomPanel = roomPanel;
+    public Client() {
+
         try {
             roomChannel = createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
         } catch (InterruptedException e) {
@@ -129,26 +119,12 @@ public class Client {
                         ChannelPipeline pipeline = channel.pipeline();
                         pipeline.addLast("Encoder", new RpcEncoder());
                         pipeline.addLast("Decoder", new RpcDecoder());
-                        pipeline.addLast("clientHandler", new RpcClientSyncHandler(gamePanel,roomPanel));
+                        pipeline.addLast("clientHandler", new RpcClientSyncHandler());
 
                     }
                 });
         return bootstrap.connect(address, port).sync().channel();
     }
 
-    public GamePanel getGamePanel() {
-        return gamePanel;
-    }
 
-    public void setGamePanel(GamePanel gamePanel) {
-        this.gamePanel = gamePanel;
-    }
-
-    public RoomPanel getRoomPanel() {
-        return roomPanel;
-    }
-
-    public void setRoomPanel(RoomPanel roomPanel) {
-        this.roomPanel = roomPanel;
-    }
 }

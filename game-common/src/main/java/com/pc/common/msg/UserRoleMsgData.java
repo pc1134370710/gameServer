@@ -52,7 +52,7 @@ public class UserRoleMsgData {
      */
     private Boolean isOver;
     /**
-     * 是否滑行
+     * 是否 闪现
      */
     private Boolean slide;
 

@@ -2,10 +2,8 @@ package com.pc.client.cmd.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.client.cmd.CmdHandler;
+import com.pc.common.cmd.CmdHandler;
 import com.pc.client.model.SkillModel;
-import com.pc.client.gui.GamePanel;
-import com.pc.client.gui.RoomPanel;
 import com.pc.common.msg.Msg;
 import com.pc.common.msg.SkillMsgData;
 
@@ -19,7 +17,7 @@ import java.util.Map;
 public class SkillDeleteCmdHandler  implements CmdHandler {
 
     @Override
-    public void doHandle(Msg msg, GamePanel gamePanel, RoomPanel roomPanel) {
+    public void doHandle(Msg msg) {
         Map<String, SkillModel> stringSkillModelMap = LocalGameInfo.stringSkillModelMap;
         SkillMsgData skillMsgData = JSON.parseObject(msg.getData(), SkillMsgData.class);
         stringSkillModelMap.remove(skillMsgData.getSkillId());
