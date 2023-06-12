@@ -11,7 +11,7 @@ public enum ServerCmd {
 
     INIT_USER_OK(200, "玩家进入房间等待游戏"),
 
-    INIT_USER_ROLE(201,"初始化用户角色，开始游戏"),
+    START_GAME(201,"初始化用户角色，开始游戏"),
 
     USER_MOVE(202,"玩家移动命令"),
 
@@ -23,15 +23,13 @@ public enum ServerCmd {
     REFRESH_USER_INFO(207,"刷新用户信息， 血量，蓝条"),
     EXIT_GAME(208,"退出游戏，即退出房间"),
 
-    USER_SLIDE(209,"用户滑行 "),
-    SERVER_USER_SLIDE(210,"服务响应客户端，用户滑行 "),
+    USER_FLASH(209,"用户滑行 "),
 
 
     INIT_ROOM(400,"初始化房间，命令"),
     GET_ALL_ROOM(401,"获取所有邮箱游戏房间命令")
     ,
-    GET_ONLINE_USER_SIZE(402, "获取在线用户数"),
-    ONLINE_USER_SIZE(403, "返回在线用户数");
+    GET_ONLINE_USER_SIZE(402, "获取在线用户数");
 
 
     public int value;

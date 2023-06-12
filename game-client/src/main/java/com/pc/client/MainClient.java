@@ -1,9 +1,9 @@
 package com.pc.client;
 
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.client.model.gui.GamePanel;
-import com.pc.client.model.gui.LoginUserPanel;
-import com.pc.client.model.gui.RoomPanel;
+import com.pc.client.gui.GamePanel;
+import com.pc.client.gui.LoginUserPanel;
+import com.pc.client.gui.RoomPanel;
 import com.pc.common.Constant;
 import com.pc.common.PropertiesUtils;
 import com.pc.common.ServerCmd;

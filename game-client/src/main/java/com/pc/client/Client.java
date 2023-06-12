@@ -1,8 +1,8 @@
 package com.pc.client;
 
 import com.alibaba.fastjson.JSON;
-import com.pc.client.model.gui.GamePanel;
-import com.pc.client.model.gui.RoomPanel;
+import com.pc.client.gui.GamePanel;
+import com.pc.client.gui.RoomPanel;
 import com.pc.common.PropertiesUtils;
 import com.pc.common.RpcDecoder;
 import com.pc.common.RpcEncoder;

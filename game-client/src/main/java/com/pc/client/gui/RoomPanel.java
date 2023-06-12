@@ -1,4 +1,4 @@
-package com.pc.client.model.gui;
+package com.pc.client.gui;
 
 import com.pc.client.cache.LocalGameInfo;
 import com.pc.common.Constant;

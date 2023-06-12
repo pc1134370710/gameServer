@@ -1,9 +1,8 @@
-package com.pc.client.model.gui;
+package com.pc.client.gui;
 
 
 import com.alibaba.fastjson.JSON;
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.client.model.GameBackdrop;
 import com.pc.client.model.NpcMonster;
 import com.pc.client.model.SkillModel;
 import com.pc.client.model.UserRoleModel;
@@ -40,10 +39,6 @@ public class GamePanel extends JPanel implements KeyListener {
      */
     private Graphics2D graphics2D ;
 
-    /**
-     * 游戏背景
-     */
-//    private GameBackdrop gameBackdrop;
 
     /**
      * 是否已经初始化完毕
@@ -122,8 +117,6 @@ public class GamePanel extends JPanel implements KeyListener {
                 this.graphics2D = bufferedImage.createGraphics();
                 this.graphics2D.setColor(Color.GRAY);
                 this.graphics2D.drawRect(0,0,Constant.withe,Constant.height);
-                // 初始化背景，将背景，
-//                gameBackdrop = new GameBackdrop(this.graphics2D);
                 init.compareAndSet(false,true);
 
             }
@@ -207,7 +200,7 @@ public class GamePanel extends JPanel implements KeyListener {
                 UserRoleMsgData userRoleMsgData = new UserRoleMsgData();
                 userRoleMsgData.setSlide(true);
                 userRoleMsgData.setUserId(userRoleModel.getUserId());
-                Msg msg = Msg.getMsg(ServerCmd.USER_SLIDE.value, userRoleModel.getUserId(), userRoleMsgData);
+                Msg msg = Msg.getMsg(ServerCmd.USER_FLASH.value, userRoleModel.getUserId(), userRoleMsgData);
                 msg.setRoomId(LocalGameInfo.roomId);
                 LocalGameInfo.client.sendMsg(msg);
             }
@@ -232,48 +225,48 @@ public class GamePanel extends JPanel implements KeyListener {
         // 往右上走
         if(keyWPressed && keyDPressed){
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX()+userRoleModel.getMoveSpeed(),userRoleModel.getY()-userRoleModel.getMoveSpeed(),null);
+            sendUserMoveMsg(userRoleModel.getUserX()+userRoleModel.getMoveSpeed(),userRoleModel.getUserY()-userRoleModel.getMoveSpeed(),null);
             // 这里 return 为了防止跟 单纯的上下左右冲突
             return;
         }
         // 往右下走
         if(keySPressed && keyDPressed){
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX()+userRoleModel.getMoveSpeed(),userRoleModel.getY()+userRoleModel.getMoveSpeed(),null);
+            sendUserMoveMsg(userRoleModel.getUserX()+userRoleModel.getMoveSpeed(),userRoleModel.getUserY()+userRoleModel.getMoveSpeed(),null);
             return;
         }
         // 往坐上走
         if(keyWPressed && keyAPressed){
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX()-userRoleModel.getMoveSpeed(),userRoleModel.getY()-userRoleModel.getMoveSpeed(),null);
+            sendUserMoveMsg(userRoleModel.getUserX()-userRoleModel.getMoveSpeed(),userRoleModel.getUserY()-userRoleModel.getMoveSpeed(),null);
             return;
         }
         // 往左下走
         if(keySPressed && keyAPressed){
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX()-userRoleModel.getMoveSpeed(),userRoleModel.getY()+userRoleModel.getMoveSpeed(),null);
+            sendUserMoveMsg(userRoleModel.getUserX()-userRoleModel.getMoveSpeed(),userRoleModel.getUserY()+userRoleModel.getMoveSpeed(),null);
             return;
         }
 
         if(code == KeyEvent.VK_W){
             keyWPressed=true;
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX(),userRoleModel.getY()-userRoleModel.getMoveSpeed(),null);
+            sendUserMoveMsg(userRoleModel.getUserX(),userRoleModel.getUserY()-userRoleModel.getMoveSpeed(),null);
         }
         if(code == KeyEvent.VK_S){
             keySPressed=true;
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX(),userRoleModel.getY()+userRoleModel.getMoveSpeed(),null);
+            sendUserMoveMsg(userRoleModel.getUserX(),userRoleModel.getUserY()+userRoleModel.getMoveSpeed(),null);
         }
         if(code == KeyEvent.VK_A){
             keyAPressed=true;
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX()-userRoleModel.getMoveSpeed(),userRoleModel.getY(),-1);
+            sendUserMoveMsg(userRoleModel.getUserX()-userRoleModel.getMoveSpeed(),userRoleModel.getUserY(),-1);
         }
         if(code == KeyEvent.VK_D){
             keyDPressed=true;
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
-            sendUserMoveMsg(userRoleModel.getX()+userRoleModel.getMoveSpeed(),userRoleModel.getY(),1);
+            sendUserMoveMsg(userRoleModel.getUserX()+userRoleModel.getMoveSpeed(),userRoleModel.getUserY(),1);
         }
 
 
@@ -306,8 +299,8 @@ public class GamePanel extends JPanel implements KeyListener {
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
             UserRoleMsgData userRoleMsgData = new UserRoleMsgData();
             userRoleMsgData.setAttack(false);
-            userRoleMsgData.setUserX(userRoleModel.getX());
-            userRoleMsgData.setUserY(userRoleModel.getY());
+            userRoleMsgData.setUserX(userRoleModel.getUserX());
+            userRoleMsgData.setUserY(userRoleModel.getUserY());
             userRoleMsgData.setUserId(userRoleModel.getUserId());
             Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.value, userRoleModel.getUserId(), userRoleMsgData);
             msg.setRoomId(LocalGameInfo.roomId);

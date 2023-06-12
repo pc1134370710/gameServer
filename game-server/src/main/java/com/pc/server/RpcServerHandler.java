@@ -134,7 +134,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
         }
 
         // 收到玩家滑行技能
-        if(msg.getCmd() == ServerCmd.USER_SLIDE.getValue()){
+        if(msg.getCmd() == ServerCmd.USER_FLASH.getValue()){
             RoomServer roomServer = RpcNettyServer.roomServerMap.get(msg.getRoomId());
             // 存储技能
             UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
@@ -146,7 +146,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
             Msg msg1 = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), userModel.getUserId(), userModel.getUserRoleMsgData());
             roomServer.putMsg(msg1);
 
-            Msg msg2 = Msg.getMsg(ServerCmd.SERVER_USER_SLIDE.getValue(), userModel.getUserId(), userModel.getUserRoleMsgData());
+            Msg msg2 = Msg.getMsg(ServerCmd.USER_FLASH.getValue(), userModel.getUserId(), userModel.getUserRoleMsgData());
             // 通知其他人，玩家滑行技能
             roomServer.putMsg(msg2);
             return;
@@ -172,7 +172,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
         //  获取在线人数
         if(msg.getCmd() == ServerCmd.GET_ONLINE_USER_SIZE.getValue()){{
             Msg m = new Msg();
-            m.setCmd(ServerCmd.ONLINE_USER_SIZE.getValue());
+            m.setCmd(ServerCmd.GET_ONLINE_USER_SIZE.getValue());
             m.setData(RpcNettyServer.channelMap.size()+"");
             channelHandlerContext.writeAndFlush(RpcProtocol.getRpcProtocol(m));
             return;

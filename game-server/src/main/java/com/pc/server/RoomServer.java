@@ -198,7 +198,7 @@ public class RoomServer {
                     user.entrySet().forEach(u->{
                         UserRoleMsgData userRoleMoveMsgData = u.getValue().getUserRoleMsgData();
                         userRoleMoveMsgData.setUserId(u.getKey());
-                        Msg msg = Msg.getMsg(ServerCmd.INIT_USER_ROLE.getValue(), userRoleMoveMsgData.getUserId(), userRoleMoveMsgData);
+                        Msg msg = Msg.getMsg(ServerCmd.START_GAME.getValue(), userRoleMoveMsgData.getUserId(), userRoleMoveMsgData);
                         // 发送消息
                         putMsg(msg);
 
@@ -258,7 +258,9 @@ public class RoomServer {
      */
     private boolean checkUserIsOk(){
         // 如果已经准备就绪了就不用再往下判断了
-        if(isOK.get()) return true;
+        if(isOK.get()) {
+            return true;
+        }
         if(user.size() == maxUserSize){
             Set<Map.Entry<String, UserModel>> entries = user.entrySet();
             int cnt =0;

@@ -1,4 +1,4 @@
-package com.pc.client.model.gui;
+package com.pc.client.gui;
 
 import javax.swing.*;
 
