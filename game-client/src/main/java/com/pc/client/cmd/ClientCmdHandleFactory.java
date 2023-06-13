@@ -29,6 +29,7 @@ public class ClientCmdHandleFactory {
         cmdHandleMap.put(ServerCmd.INIT_ROOM.getValue(), new InitRoomCmdHandler());
         cmdHandleMap.put(ServerCmd.GET_ONLINE_USER_SIZE.getValue(), new OnlineUserCmdHandler());
         cmdHandleMap.put(ServerCmd.EXIT_GAME.getValue(), new ExitGameCmdHandler());
+        cmdHandleMap.put(ServerCmd.INIT_NPC.getValue(), new InitNpcUserCmdHandler());
 
     }
     private ClientCmdHandleFactory(){

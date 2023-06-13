@@ -28,6 +28,8 @@ public class MainClient {
         PropertiesUtils.load();
 
         JFrame frame = getCommonJFrame("");
+        LocalGameInfo.jFrame = frame;
+
         LoginUserPanel loginUserPanel = new LoginUserPanel();
         loginUserPanel.setBackground(Color.cyan);
         loginUserPanel.setBounds(0,0, Constant.JFrameWithe,Constant.JFrameHeight);
@@ -52,6 +54,10 @@ public class MainClient {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) { // 按下鼠标左键
+
+                    // todo 待检测 用户名是否合法，
+
+
                     LocalGameInfo.userId = jTextField.getText();
                     frame.setVisible(false);
 

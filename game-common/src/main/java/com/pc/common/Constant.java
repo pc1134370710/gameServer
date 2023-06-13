@@ -72,6 +72,14 @@ public class Constant {
      */
     public static final int SKillSpeed = 4;
 
+    /**
+     * 电脑玩家 感知范围
+     */
+    public static final int senseRange = 1500;
+    /**
+     * 电脑玩家攻击距离
+     */
+    public static final int attackRange= 130;
 
     /**
      * 房间选择大厅大小
@@ -86,4 +94,5 @@ public class Constant {
     public static final  int height = 742;
 
 
+    public static Long pcAttackTimeGap = 1000L;
 }

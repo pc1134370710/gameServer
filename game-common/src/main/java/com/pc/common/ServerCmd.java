@@ -6,8 +6,8 @@ package com.pc.common;
  * @time: 2023/6/7 13:19
  */
 public enum ServerCmd {
-    INIT_NPC(1001,"初始化小怪"),
-    NPC_MOVE(1002,"小怪移动"),
+    INIT_NPC(1001,"初始化电脑玩家"),
+    NPC_MOVE(1002,"电脑玩家移动位置"),
 
     USER_INTO_ROOM(200, "玩家进入房间等待游戏"),
 

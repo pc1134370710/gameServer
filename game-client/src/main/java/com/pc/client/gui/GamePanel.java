@@ -3,7 +3,6 @@ package com.pc.client.gui;
 
 import com.alibaba.fastjson.JSON;
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.client.model.NpcMonster;
 import com.pc.client.model.SkillModel;
 import com.pc.client.model.UserRoleModel;
 import com.pc.common.Constant;
@@ -74,9 +73,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
         this.graphics2D.setColor(Color.lightGray);
         this.graphics2D.fillRect(0,0,Constant.withe,Constant.height);
-        for(NpcMonster npcMonster: LocalGameInfo.npcMonsters.values()){
-            npcMonster.paintOneself();
-        }
+
 
         // 绘制用户
         for(UserRoleModel userRoleModel : LocalGameInfo.userRoleModelMap.values()){
@@ -125,15 +122,10 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
 
-
     /**
-     * 添加小怪
-     * @param npcMonster
+     * 添加玩家
+     * @param userRoleModel
      */
-    public void addMonsters(NpcMonster npcMonster){
-        npcMonster.setGameGraphics2D(this.graphics2D);
-        LocalGameInfo.npcMonsters.put(npcMonster.getMonsterId(),npcMonster);
-    }
     public void addUser(UserRoleModel userRoleModel){
         userRoleModel.setGameGraphics2D(this.graphics2D);
         LocalGameInfo.userRoleModelMap.put(userRoleModel.getUserId(),userRoleModel);

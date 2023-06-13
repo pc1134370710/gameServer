@@ -4,6 +4,7 @@ import com.pc.common.Constant;
 import lombok.Data;
 
 import java.awt.*;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,6 +57,18 @@ public class UserRoleMsgData {
      */
     private Boolean slide;
 
+
+    /**
+     * 电脑正在追踪的玩家
+     */
+    private String chasingUserId;
+
+    /**
+     * 电脑玩家当前攻击时间， 用于电脑玩家停止 ，间隔后继续攻击
+     */
+    private Long pcAttackTime;
+
+
     public UserRoleMsgData() {
 
         // 默认都是 正常状态,因为会自动恢复，所以放在这
@@ -77,7 +90,37 @@ public class UserRoleMsgData {
         this.slide = false;
         return this;
     }
+    // 初始化npc
 
+    public UserRoleMsgData initNpc(){
+        Random random = new Random();
+        int i = random.nextInt(100);
+        int y = random.nextInt(Constant.height);
+        // 随机左右出现
+        this.userX = i%2==0?0:Constant.withe;
+        this.userY = y;
+        this.hp = Constant.userRoleHP;
+        this.mp = Constant.userRoleMP;
+        this.direction = 1;
+        this.isOver = false;
+        this.slide = false;
+        return this;
+    }
+
+
+    /**
+     * 计算 x,y 坐标与现在坐标的距离
+     * @param x
+     * @param y
+     * @return
+     */
+    public int distanceCalculator(int x, int y){
+        // 计算距离公式
+        x =userX-x;
+        y=userY-y;
+        int count = (int) Math.sqrt(x * x +y * y);
+        return count;
+    }
 
     /**
      * 限制坐标

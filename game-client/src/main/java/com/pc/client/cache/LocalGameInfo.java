@@ -3,7 +3,6 @@ package com.pc.client.cache;
 import com.pc.client.Client;
 import com.pc.client.gui.GamePanel;
 import com.pc.client.gui.RoomPanel;
-import com.pc.client.model.NpcMonster;
 import com.pc.client.model.SkillModel;
 import com.pc.client.model.UserRoleModel;
 
@@ -36,10 +35,7 @@ public class LocalGameInfo {
     public volatile static Client client;
 
 
-    /**
-     * 游戏房间小怪
-     */
-    public volatile static Map<String, NpcMonster> npcMonsters = new ConcurrentHashMap<>();
+
     /**
      * 游戏房间用户
      */
@@ -56,13 +52,26 @@ public class LocalGameInfo {
 
 
     /**
-     * 房间面板
+     * 登录窗口
+     */
+    public volatile static  JFrame jFrame;
+    /**
+     * 房间窗口
      */
     public volatile static  JFrame roomJFrame;
 
+    /**
+     * 游戏窗口
+     */
     public volatile static JFrame gameFrame;
 
+    /**
+     * 游戏画板
+     */
     public volatile static GamePanel gamePanel;
+    /**
+     * 房间画板
+     */
     public volatile static RoomPanel roomPanel;
 
 
