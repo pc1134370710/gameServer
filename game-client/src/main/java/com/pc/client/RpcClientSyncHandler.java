@@ -10,6 +10,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * 这里使用并发的等待-通知机制来拿到结果
  *
@@ -30,8 +32,8 @@ public class RpcClientSyncHandler extends SimpleChannelInboundHandler<RpcProtoco
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcProtocol rpcProtocol) {
-        String json = new String(rpcProtocol.getContent());
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcProtocol rpcProtocol) throws UnsupportedEncodingException {
+        String json = new String(rpcProtocol.getContent(),"utf-8");
         System.out.println("收到消息："+json);
         Msg msg = JSON.parseObject(json, Msg.class);
 

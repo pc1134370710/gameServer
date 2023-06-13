@@ -21,6 +21,8 @@ package com.pc.common;
 import com.alibaba.fastjson.JSON;
 import com.pc.common.msg.Msg;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Netty 通信的数据格式
  */
@@ -70,7 +72,11 @@ public class RpcProtocol {
         String json = JSON.toJSONString(msg);
         RpcProtocol rpcProtocol = new RpcProtocol();
         rpcProtocol.setLen(json.getBytes().length);
-        rpcProtocol.setContent(json.getBytes());
+        try {
+            rpcProtocol.setContent(json.getBytes("utf-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         return rpcProtocol;
     }
     @Override
