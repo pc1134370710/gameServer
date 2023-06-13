@@ -79,17 +79,9 @@ public class RoomServer {
         initUserRole();
 
         // todo 可以优化成， 有用户点击加入房间后在跑这些任务
-        // 检测技能释放
-        checkMoveSkill();
-        // 检测普攻
-        checkUserAttack();
-        // 玩家状态检测， 以及恢复MP 蓝条
-        recoverMpAndCheckUserStatus();
 
-        if(addNpc){
-            // 初始化电脑玩家
-            initNpcUser();
-        }
+
+
         // 检测房间可用
         checkRoom();
 
@@ -186,7 +178,8 @@ public class RoomServer {
     private void initNpcUser() {
 
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(()->{
-            if(!checkUserIsOk()){
+            // 玩家准备就绪， 并且玩家以及初始化后才初始化 npc
+            if(!checkUserIsOk() && !isInit.get()){
                 return;
             }
             // 场上电脑 少于5个
@@ -194,7 +187,7 @@ public class RoomServer {
                 // 添加
                 for(int i = 0; i<2-npcUser.size();i++){
                     UserRoleMsgData userRoleMsgData  = new UserRoleMsgData().initNpc();
-                    userRoleMsgData.setUserId("电脑玩家"+System.currentTimeMillis());
+                    userRoleMsgData.setUserId("电脑"+System.currentTimeMillis());
                     npcUser.put(userRoleMsgData.getUserId(),userRoleMsgData);
                     Msg msg = Msg.getMsg(ServerCmd.INIT_NPC.value, userRoleMsgData.getUserId(), userRoleMsgData);
                     putMsg(msg);
@@ -208,36 +201,37 @@ public class RoomServer {
                 if(next.getValue().getIsOver()){
                     // 已经死亡了, 移除该npc
                     iterator.remove();
-                    ThreadSleepUtils.sleep(200);
+                    // 短暂保留 死亡画面
+                    ThreadSleepUtils.sleep(400);
                     //  发送 电脑玩家对出游戏命令
                     Msg msg = Msg.getMsg(ServerCmd.EXIT_GAME.getValue(), next.getValue().getUserId(), next.getValue());
                     putMsg(msg);
                     return;
                 }
-                try {
-                    // 如果该电脑玩家已经在 追踪 玩家了
-                    if(next.getValue().getChasingUserId() !=null){
-                        traceUser(user.get(next.getValue().getChasingUserId()).getUserRoleMsgData(),next.getValue());
+                // 如果该电脑玩家已经在 追踪 玩家了
+                if(next.getValue().getChasingUserId() !=null){
+                    UserModel userModel = user.get(next.getValue().getChasingUserId());
+                    if(userModel == null){
+                        // 为空的情况， 可能是玩家 中途退出了游戏
+                        return;
                     }
-                    else{
-                        // 获取所有符合追踪的玩家
-                        List<UserModel> list = new ArrayList<>();
-                        user.forEach((ku,vu)->{
-                            int distance = next.getValue().distanceCalculator(vu.getUserRoleMsgData().getUserX(), vu.getUserRoleMsgData().getUserY());
-                            if (distance <= Constant.senseRange ) {
-                                list.add(vu);
-                            }
-                        });
-                        if(list.size() !=0){
-                            // 随机选择一个玩家 进行跟踪打击
-                            int i = ThreadLocalRandom.current().nextInt(list.size());
-                            traceUser(list.get(i).getUserRoleMsgData(),next.getValue());
-                        }
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
+                    traceUser(userModel.getUserRoleMsgData(),next.getValue());
                 }
-
+                else{
+                    // 获取所有符合追踪的玩家
+                    List<UserModel> list = new ArrayList<>();
+                    user.forEach((ku,vu)->{
+                        int distance = next.getValue().distanceCalculator(vu.getUserRoleMsgData().getUserX(), vu.getUserRoleMsgData().getUserY());
+                        if (distance <= Constant.senseRange ) {
+                            list.add(vu);
+                        }
+                    });
+                    if(list.size() !=0){
+                        // 随机选择一个玩家 进行跟踪打击
+                        int i = ThreadLocalRandom.current().nextInt(list.size());
+                        traceUser(list.get(i).getUserRoleMsgData(),next.getValue());
+                    }
+                }
 
             }
 
@@ -391,7 +385,18 @@ public class RoomServer {
 
                     });
                     isInit.set(true);
-                    return;
+
+                    if(addNpc){
+                        // 初始化电脑玩家
+                        initNpcUser();
+                    }
+                    // 检测普攻， 先转换成，收到消息时处理
+                     checkUserAttack();
+                    // 检测技能释放
+                    checkMoveSkill();
+                    // 玩家状态检测， 以及恢复MP 蓝条
+                    recoverMpAndCheckUserStatus();
+
                 }
                 try {
                     Thread.sleep(1000);
@@ -399,6 +404,50 @@ public class RoomServer {
                 }
             }
         });
+
+    }
+
+
+    /**
+     * 普通攻击
+     * @param take
+     */
+    public void userAttack(UserRoleMsgData take){
+        Set<Map.Entry<String, UserModel>> entries = user.entrySet();
+        for(Map.Entry<String, UserModel> entry : entries){
+            if(!entry.getKey().equals(take.getUserId())){
+                // 不是自己的普通攻击,在同一条直线上
+                if( take.getUserY().equals(entry.getValue().getUserRoleMsgData().getUserY())
+                        &&  take.rectangle().intersects(entry.getValue().getUserRoleMsgData().rectangle())){
+                    // 血量减少
+                    UserRoleMsgData userRoleMsgData = entry.getValue().getUserRoleMsgData();
+                    int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
+                    userRoleMsgData.setHp(hp<0?0:hp);
+                    userRoleMsgData.setIsOver(hp<=0);
+                    Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
+                    putMsg(msg);
+                }
+            }
+        }
+        if(take.getChasingUserId() !=null){
+            // 如果是电脑玩家发起的攻击， 那么对电脑玩家不生效
+            return;
+        }
+        //todo  检测电脑玩家
+        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
+        for(Map.Entry<String, UserRoleMsgData> entry : npc){
+                if( take.getUserY().equals(entry.getValue().getUserY())
+                        &&  take.rectangle().intersects(entry.getValue().rectangle())
+                ){
+                    // 血量减少
+                    UserRoleMsgData userRoleMsgData = entry.getValue();
+                    int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
+                    userRoleMsgData.setHp(hp<0?0:hp);
+                    userRoleMsgData.setIsOver(hp<=0);
+                    Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
+                    putMsg(msg);
+                }
+        }
 
     }
 
@@ -426,30 +475,36 @@ public class RoomServer {
                                 userRoleMsgData.setHp(hp<0?0:hp);
                                 userRoleMsgData.setIsOver(hp<=0);
                                 Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
-//                                putMsg(msg);
-                                list.add(msg);
+                                putMsg(msg);
+                                // 只能打到一个人身上
+                                // continue;
                             }
                         }
                     }
-                    //todo  检测电脑玩家
-                    Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
-                    for(Map.Entry<String, UserRoleMsgData> entry : npc){
-                        if(!entry.getKey().equals(take.getUserId())){
-                            if( take.getUserY().equals(entry.getValue().getUserY())
-                                    &&  take.rectangle().intersects(entry.getValue().rectangle())){
-                                // 血量减少
-                                UserRoleMsgData userRoleMsgData = entry.getValue();
-                                int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
-                                userRoleMsgData.setHp(hp<0?0:hp);
-                                userRoleMsgData.setIsOver(hp<=0);
-                                Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
-//                                putMsg(msg);
-                                list.add(msg);
+                    try {
+                        if(take.getChasingUserId() ==null){
+                            //todo  检测电脑玩家
+                            Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
+                            for(Map.Entry<String, UserRoleMsgData> entry : npc){
+                                if( take.getUserY().equals(entry.getValue().getUserY())
+                                        &&  take.rectangle().intersects(entry.getValue().rectangle())
+                                ){
+                                    // 血量减少
+                                    UserRoleMsgData userRoleMsgData = entry.getValue();
+                                    int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
+                                    userRoleMsgData.setHp(hp<0?0:hp);
+                                    userRoleMsgData.setIsOver(hp<=0);
+                                    Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
+                                    putMsg(msg);
+                                }
                             }
                         }
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
+
                     // 统一投递
-                    list.forEach(a->putMsg(a));
+//                    list.forEach(a->putMsg(a));
                 } catch (InterruptedException e) {
                     System.out.println("检测普通失败");
                     e.printStackTrace();

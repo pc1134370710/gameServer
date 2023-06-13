@@ -31,10 +31,8 @@ public class UserAttackServerCmdHandler  implements ServerCmdHandler {
         userModel.analysisAttackMsg(userRoleMoveMsgData);
         if(userRoleMoveMsgData.getAttack()){
             // 如果是触发攻击， 房间会检测攻击是否生效
-            try {
-                roomServer.getAttackQueue().put(userModel.getUserRoleMsgData());
-            } catch (InterruptedException e) {
-            }
+            roomServer.putAttackMsg(userModel.getUserRoleMsgData());
+
         }
         // 通知其他人，有人释放技能了
         roomServer.putMsg(msg);

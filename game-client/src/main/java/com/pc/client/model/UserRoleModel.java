@@ -162,7 +162,7 @@ public class UserRoleModel  extends BasicModel {
 //                this.gameGraphics2D.drawRect(userX-35,userY-8,200,130);
 //            }else{
 //                // 往左边
-//                this.gameGraphics2D.drawRect(userX-112,userY-8,200,130);
+//                this.gameGraphics2D.drawRect(userX-100,userY-8,200,130);
 //            }
 //
 //        }
@@ -179,17 +179,17 @@ public class UserRoleModel  extends BasicModel {
     }
 
     public Rectangle getRectangle() {
-        if(!attack.get()){
-            return new Rectangle(userX,userY-8,45,130);
-        }
-        else{
-            if(direction>0){
+        if(attack!=null && attack.get()){
+            if(direction !=null && direction<0){
+                // 往左边
+                return new Rectangle(userX-100,userY-8,200,130);
+            }else{
                 // 往右边
                 return new Rectangle(userX-35,userY-8,200,130);
-            }else{
-                // 往左边
-                return new Rectangle(userX-112,userY-8,200,130);
             }
+        }else{
+            // 如果不是攻击形态
+            return new Rectangle(userX,userY-8,45,130);
         }
     }
 

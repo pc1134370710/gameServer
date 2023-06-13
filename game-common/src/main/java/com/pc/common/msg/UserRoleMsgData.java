@@ -149,17 +149,17 @@ public class UserRoleMsgData {
     }
 
     public Rectangle rectangle() {
-        if(attack!=null && !attack){
-            return new Rectangle(userX,userY-8,45,130);
-        }
-        else{
-            if(direction>0){
+        if(attack!=null && attack){
+            if(direction !=null && direction<0){
+                // 往左边
+                return new Rectangle(userX-100,userY-8,200,130);
+            }else{
                 // 往右边
                 return new Rectangle(userX-35,userY-8,200,130);
-            }else{
-                // 往左边
-                return new Rectangle(userX-112,userY-8,200,130);
             }
+        }else{
+            // 如果不是攻击形态
+            return new Rectangle(userX,userY-8,45,130);
         }
     }
 
