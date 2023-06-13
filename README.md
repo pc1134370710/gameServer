@@ -25,3 +25,6 @@ l 闪现
 npc 追击玩家截图
 
 ![输入图片说明](imagenpc.png)
+
+![输入图片说明](imageimagenpc2.png)
+![输入图片说明](imageimagenpc4.png)
