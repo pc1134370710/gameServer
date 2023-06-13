@@ -53,9 +53,9 @@ public class RpcNettyServer {
     public RpcNettyServer(int port) {
         this.port = port;
         // 初始化房间
-        roomServerMap.put("1",new RoomServer("1",1));
-        roomServerMap.put("2",new RoomServer("2",2));
-        roomServerMap.put("3",new RoomServer("3",1));
+        roomServerMap.put("1",new RoomServer("1",1,true,"单人电脑对战"));
+        roomServerMap.put("2",new RoomServer("2",2,false,"多人混战"));
+        roomServerMap.put("3",new RoomServer("3",2,true,"多人混战（包含电脑）"));
 
     }
 

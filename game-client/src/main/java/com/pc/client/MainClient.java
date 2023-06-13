@@ -28,6 +28,7 @@ public class MainClient {
         PropertiesUtils.load();
 
         JFrame frame = getCommonJFrame("");
+        frame.setResizable(false); // 固定窗口大小
         LocalGameInfo.jFrame = frame;
 
         LoginUserPanel loginUserPanel = new LoginUserPanel();
@@ -63,9 +64,12 @@ public class MainClient {
 
                     // 创建房间面板
                     JFrame roomJFrame = getCommonJFrame("当前玩家：" + LocalGameInfo.userId);
+                    roomJFrame.setResizable(false); // 固定窗口大小
+
                     RoomPanel roomPanel = new RoomPanel();
+//                    roomPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
                     roomJFrame.add(roomPanel);
-                    roomPanel.setBounds( 0, 0 ,300, 200);
+                    roomPanel.setBounds( 0, 0 ,Constant.JFrameWithe, Constant.JFrameHeight);
                     LocalGameInfo.roomJFrame = roomJFrame;
 
                     // 创建游戏面板

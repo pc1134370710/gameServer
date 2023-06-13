@@ -3,6 +3,7 @@ package com.pc.client.gui;
 import com.pc.client.cache.LocalGameInfo;
 import com.pc.common.ServerCmd;
 import com.pc.common.msg.Msg;
+import com.pc.common.msg.RoomMsgData;
 import lombok.Data;
 
 import javax.swing.*;
@@ -31,13 +32,13 @@ public class RoomButton  extends JButton  implements MouseListener{
     private Boolean fullUser;
     private Boolean startGame;
 
-    public RoomButton(String roomId,Integer maxUserSize,Integer userSize,boolean fullUser,boolean startGame){
-        this.roomId = roomId;
-        this.maxUserSize = maxUserSize;
-        this.userSize = userSize;
-        this.fullUser=fullUser;
-        this.startGame=startGame;
-        String text = "加入该房间 房间id: "+roomId+", 满人"+maxUserSize+"开始,当前人数: "+userSize;
+    public RoomButton(RoomMsgData roomMsgData){
+        this.roomId = roomMsgData.getRoomId();
+        this.maxUserSize = roomMsgData.getMaxUserSize();
+        this.userSize = roomMsgData.getUserSize();
+        this.fullUser=roomMsgData.getFullUser();
+        this.startGame=roomMsgData.getStartGame();
+        String text =roomMsgData.getRoomName()+" 房间id: "+roomId+", 满人"+maxUserSize+"开始,当前人数: "+userSize;
         if(startGame){
             text ="正在游戏";
         }else{

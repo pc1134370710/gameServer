@@ -34,4 +34,6 @@ public class RoomMsgData {
      */
     private Boolean startGame;
 
+    private String roomName;
+
 }

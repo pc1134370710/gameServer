@@ -56,12 +56,22 @@ public class RoomServer {
 
     // 最大游戏人数量
     private int maxUserSize = 2;
+    /**
+     * 是否添加机器人
+     */
+    private boolean addNpc ;
+    /**
+     * 房间名称
+     */
+    private String roomName;
 
     private AtomicBoolean isInit = new AtomicBoolean(false);
     private AtomicBoolean isOK= new AtomicBoolean(false);
 
-    public RoomServer(String id ,int maxUserSize){
+    public RoomServer(String id ,int maxUserSize,boolean addNpc,String roomName){
         this.id = id;
+        this.roomName = roomName;
+        this.addNpc = addNpc;
         this.maxUserSize = maxUserSize;
         // 获取消息发送
         sendMsg();
@@ -76,9 +86,10 @@ public class RoomServer {
         // 玩家状态检测， 以及恢复MP 蓝条
         recoverMpAndCheckUserStatus();
 
-        // 初始化电脑玩家
-        initNpcUser();
-
+        if(addNpc){
+            // 初始化电脑玩家
+            initNpcUser();
+        }
         // 检测房间可用
         checkRoom();
 
@@ -231,7 +242,7 @@ public class RoomServer {
             }
 
 
-        },1,70,TimeUnit.MILLISECONDS);
+        },3,70,TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -327,6 +338,35 @@ public class RoomServer {
                     re.printStackTrace();
                 }
 
+            }
+        }
+
+        // 检测电脑玩家
+        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
+        for (Map.Entry<String, UserRoleMsgData> e : npc){
+            String k = e.getKey();
+            UserRoleMsgData userRoleMsgData =e.getValue();
+            if(!k.equals(skillMsgData.getUserId())){
+                try {
+                    // 不是自己释放的技能 , 技能跟玩家站在一条线上, 并且玩家还没有死
+                    if( skillMsgData.getY() == userRoleMsgData.getUserY()
+                            && skillMsgData.rectangle().intersects(userRoleMsgData.rectangle())
+                            && !userRoleMsgData.getIsOver()
+                    ){
+                        // 血量减少
+                        int hp = userRoleMsgData.getHp()  -   Constant.skillHarm;
+                        userRoleMsgData.setHp(hp<0?0:hp);
+                        userRoleMsgData.setIsOver(hp<=0);
+                        Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), k, userRoleMsgData);
+                        putMsg(msg);
+                        // 发送技能失效
+                        Msg msg2 = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), k, skillMsgData);
+                        putMsg(msg2);
+                        return true;
+                    }
+                }catch (Exception re){
+                    re.printStackTrace();
+                }
             }
         }
 
