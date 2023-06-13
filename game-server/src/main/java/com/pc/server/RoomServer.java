@@ -7,6 +7,7 @@ import com.pc.common.ServerCmd;
 import com.pc.common.msg.Msg;
 import com.pc.common.msg.SkillMsgData;
 import com.pc.common.msg.UserRoleMsgData;
+import com.pc.common.utils.ThreadSleepUtils;
 import lombok.Data;
 
 import java.util.*;
@@ -92,9 +93,9 @@ public class RoomServer {
             return;
         }
 
-        // 如果上一次的攻击时间 + 冷却期 < 小于当前时间， 证明还不能攻击跟移动
+        // 如果上一次的攻击时间 + 冷却期 > 小于当前时间， 证明还不能攻击跟移动
         if(pcUser.getPcAttackTime()!=null &&
-                pcUser.getPcAttackTime()+Constant.pcAttackTimeGap <System.currentTimeMillis()){
+                (pcUser.getPcAttackTime()+Constant.pcAttackTimeGap) >System.currentTimeMillis()){
             return;
         }
 
@@ -103,26 +104,7 @@ public class RoomServer {
         // 如果在感知范围内,开始追踪玩家
         if (distance <= Constant.senseRange ) {
             pcUser.setChasingUserId(user.getUserId());
-            // 开始追踪玩家,移动到攻击范围内
-            // 判断玩家方向
-            // 坐标轴， 左上是 0,0
-            int monsterX=pcUser.getUserX(),monsterY=pcUser.getUserY();
-            if(user.getUserX()>pcUser.getUserX()){
-                // 在右边
-                monsterX+=pcUser.getMoveSpeed();
-                pcUser.setDirection(1);
-            }else{
-                monsterX-=pcUser.getMoveSpeed();
-                pcUser.setDirection(-1);
-            }
-            if(user.getUserY()>pcUser.getUserY()){
-                // 在下边
-                monsterY+=pcUser.getMoveSpeed();
-            }else{
-                monsterY-=pcUser.getMoveSpeed();
-            }
-            pcUser.setUserX(monsterX);
-            pcUser.setUserY(monsterY);
+
 
             // 如果在攻击范围内,开始攻击玩家
             if (distance <= Constant.attackRange && user.getUserY().intValue() == pcUser.getUserY().intValue() ) {
@@ -130,7 +112,6 @@ public class RoomServer {
                 pcUser.setPcAttackTime(System.currentTimeMillis());
                 // todo 这一步应该异步化w
                 // 攻击玩家
-                System.out.println("攻击玩家");
                 pcUser.setAttack(true);
                 Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
                 putMsg(msg);
@@ -146,15 +127,39 @@ public class RoomServer {
                 // 重新new 一个对象， 防止引用传递，将该对象修改掉
                 putAttackMsg(temp);
 
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                }
+                ThreadSleepUtils.sleep(200);
                 // 取消攻击
                 pcUser.setAttack(false);
                 msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
                 putMsg(msg);
             }else{
+                // 开始追踪玩家,移动到攻击范围内
+                // 判断玩家方向
+                // 坐标轴， 左上是 0,0
+                int monsterX=pcUser.getUserX(),monsterY=pcUser.getUserY();
+                if(user.getUserX()-Constant.attackRange>pcUser.getUserX()){
+                    // 在右边
+                    monsterX+=Constant.NPCSpeed;
+                    pcUser.setDirection(1);
+                }else if(user.getUserX()-Constant.attackRange < pcUser.getUserX()){
+                    monsterX-=Constant.NPCSpeed;
+                    pcUser.setDirection(-1);
+                }
+                // todo   Constant.NPCSpeed  大于一的话， 会跟 用户坐标对不上，导致一直上下移动bug
+                //  所以这个绝对值比较为了解决这一个问题，
+                if(Math.abs(user.getUserY() - pcUser.getUserY())<=2){
+                    monsterY = user.getUserY();
+                }
+                else if(user.getUserY()>pcUser.getUserY()){
+                    // 在下边
+                    monsterY+=Constant.NPCSpeed;
+                }else if(user.getUserY()< pcUser.getUserY()){
+                    monsterY-=Constant.NPCSpeed;
+                }
+
+
+                pcUser.setUserX(monsterX);
+                pcUser.setUserY(monsterY);
                 Msg msg = new Msg();
                 msg.setCmd(ServerCmd.USER_MOVE.getValue());
                 msg.setUserId(pcUser.getUserId());
@@ -174,9 +179,9 @@ public class RoomServer {
                 return;
             }
             // 场上电脑 少于5个
-            if(npcUser.size() <3){
+            if(npcUser.size() <2){
                 // 添加
-                for(int i = 0; i<3-npcUser.size();i++){
+                for(int i = 0; i<2-npcUser.size();i++){
                     UserRoleMsgData userRoleMsgData  = new UserRoleMsgData().initNpc();
                     userRoleMsgData.setUserId("电脑玩家"+System.currentTimeMillis());
                     npcUser.put(userRoleMsgData.getUserId(),userRoleMsgData);
@@ -192,19 +197,36 @@ public class RoomServer {
                 if(next.getValue().getIsOver()){
                     // 已经死亡了, 移除该npc
                     iterator.remove();
+                    ThreadSleepUtils.sleep(200);
                     //  发送 电脑玩家对出游戏命令
                     Msg msg = Msg.getMsg(ServerCmd.EXIT_GAME.getValue(), next.getValue().getUserId(), next.getValue());
                     putMsg(msg);
                     return;
                 }
-                if(next.getValue().getChasingUserId() !=null){
-                    traceUser(user.get(next.getValue().getChasingUserId()).getUserRoleMsgData(),next.getValue());
+                try {
+                    // 如果该电脑玩家已经在 追踪 玩家了
+                    if(next.getValue().getChasingUserId() !=null){
+                        traceUser(user.get(next.getValue().getChasingUserId()).getUserRoleMsgData(),next.getValue());
+                    }
+                    else{
+                        // 获取所有符合追踪的玩家
+                        List<UserModel> list = new ArrayList<>();
+                        user.forEach((ku,vu)->{
+                            int distance = next.getValue().distanceCalculator(vu.getUserRoleMsgData().getUserX(), vu.getUserRoleMsgData().getUserY());
+                            if (distance <= Constant.senseRange ) {
+                                list.add(vu);
+                            }
+                        });
+                        if(list.size() !=0){
+                            // 随机选择一个玩家 进行跟踪打击
+                            int i = ThreadLocalRandom.current().nextInt(list.size());
+                            traceUser(list.get(i).getUserRoleMsgData(),next.getValue());
+                        }
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-                else{
-                    user.forEach((ku,vu)->{
-                        traceUser(vu.getUserRoleMsgData(),next.getValue());
-                    });
-                }
+
 
             }
 
@@ -490,7 +512,7 @@ public class RoomServer {
 
     private Msg getMsg(){
         try {
-            System.out.println("队列大小："+queue.size());
+//            System.out.println("队列大小："+queue.size());
             Msg take = queue.take();
             return take;
         } catch (InterruptedException e) {

@@ -46,6 +46,7 @@ public class Constant {
      * 玩家移动速度
      */
     public static final int userRoleSpeed=3;
+    public static final int NPCSpeed=3;
     /**
      * 闪现
      */
@@ -94,5 +95,5 @@ public class Constant {
     public static final  int height = 742;
 
 
-    public static Long pcAttackTimeGap = 1000L;
+    public static Long pcAttackTimeGap = 2000L;
 }

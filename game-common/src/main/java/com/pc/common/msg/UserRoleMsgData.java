@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.awt.*;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -93,9 +94,9 @@ public class UserRoleMsgData {
     // 初始化npc
 
     public UserRoleMsgData initNpc(){
-        Random random = new Random();
+        Random random = new Random(System.currentTimeMillis());
         int i = random.nextInt(100);
-        int y = random.nextInt(Constant.height);
+        int y  = ThreadLocalRandom.current().nextInt(Constant.height);
         // 随机左右出现
         this.userX = i%2==0?0:Constant.withe;
         this.userY = y;
