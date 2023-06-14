@@ -39,7 +39,10 @@ public class UserModel {
     }
 
 
-
+    /**
+     * 解析 移动数据包
+     * @param userRoleMoveMsgData
+     */
     public void analysisMoveMsg(UserRoleMsgData userRoleMoveMsgData){
         if(userRoleMoveMsgData.getUserX()!=null){
             this.getUserRoleMsgData().setUserX(userRoleMoveMsgData.getUserX());
@@ -52,12 +55,21 @@ public class UserModel {
         }
     }
 
+    /**
+     * 解析攻击 数据包
+     * @param userRoleMoveMsgData
+     */
     public void analysisAttackMsg(UserRoleMsgData userRoleMoveMsgData){
 
         if(userRoleMoveMsgData.getAttack()!=null){
             this.getUserRoleMsgData().setAttack(userRoleMoveMsgData.getAttack());
         }
     }
+
+    /**
+     * 解析闪现技能 数据包
+     * @param userRoleMoveMsgData
+     */
     public void analysisSlideMsg(UserRoleMsgData userRoleMoveMsgData){
 
         if(userRoleMoveMsgData.getSlide() != null){

@@ -8,6 +8,8 @@ import com.pc.common.Constant;
 import com.pc.common.PropertiesUtils;
 import com.pc.common.ServerCmd;
 import com.pc.common.msg.Msg;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 
 /**
  * @description:  客户端主程序 运行入口
@@ -24,8 +27,12 @@ import java.awt.event.WindowListener;
 public class MainClient {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         PropertiesUtils.load();
+
+        //必须放在最前面初始化log4j的地址 该方式可以加载jar包同级目录下的文件
+        ConfigurationSource source = new ConfigurationSource(MainClient.class.getResourceAsStream("/log4j2.xml"));
+        Configurator.initialize((ClassLoader)null, source);
 
         JFrame frame = getCommonJFrame("");
         frame.setResizable(false); // 固定窗口大小
@@ -56,9 +63,13 @@ public class MainClient {
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) { // 按下鼠标左键
 
+                    if(jTextField.getText() == null){
+                        return;
+                    }
+                    if(jTextField.getText().trim().length()==0){
+                        return;
+                    }
                     // todo 待检测 用户名是否合法，
-
-
                     LocalGameInfo.userId = jTextField.getText();
                     frame.setVisible(false);
 

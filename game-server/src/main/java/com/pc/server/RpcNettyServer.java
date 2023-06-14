@@ -23,6 +23,10 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Netty Server 启动类
  */
 public class RpcNettyServer {
-
+    private static Logger log = LogManager.getLogger(RpcNettyServer.class);
     /**
      *  所有的获取房间的连接信息
      *  key, 管道id -- 获取房间信息的管道
@@ -94,17 +98,21 @@ public class RpcNettyServer {
         Channel channel = serverBootstrap.bind(port).sync().channel();
         //等待服务端口关闭
         channel.closeFuture().sync();
-        System.out.println("服务器启动完毕！");
     }
 
     public static void main(String[] args)  {
+
         RpcNettyServer rpcNettyServer = new RpcNettyServer(10096);
         try {
+            //必须放在最前面初始化log4j的地址 该方式可以加载jar包同级目录下的文件
+            ConfigurationSource source = new ConfigurationSource(RpcNettyServer.class.getResourceAsStream("/log4j2.xml"));
+            Configurator.initialize((ClassLoader)null, source);
+            log.info("启动游戏服务器： 10096");
+
             rpcNettyServer.run();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("服务器启动完毕！");
     }
 }

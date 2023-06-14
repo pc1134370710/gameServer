@@ -29,13 +29,15 @@ import com.pc.server.cmd.ServerCmdHandleFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
-
+    private Logger log = LogManager.getLogger(RpcServerHandler.class);
     /*
         handlerAdded() 当检测到新连接之后，调用 ch.pipeline().addLast(new XXXHandler()); 之后的回调
         channelRegistered() 当前的 channel 的所有的逻辑处理已经和某个 NIO 线程建立了绑定关系
@@ -53,8 +55,8 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("玩家离线，通道已经被关闭");
         RpcNettyServer.channelMap.remove(ctx.channel().id()+"");
+        log.info("玩家离线");
     }
 
     /**
@@ -66,7 +68,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcProtocol rpcProtocol) throws Exception {
         String json = new String(rpcProtocol.getContent());
-//        System.out.println("服务器收到消息："+ json);
         Msg msg = JSON.parseObject(json, Msg.class);
 
         ServerCmdHandler cmdHandle = ServerCmdHandleFactory.getCmdHandle(msg.getCmd());
@@ -77,6 +78,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        log.error("发生异常",cause);
     }
 }

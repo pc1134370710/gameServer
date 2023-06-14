@@ -9,6 +9,8 @@ import com.pc.common.msg.SkillMsgData;
 import com.pc.common.msg.UserRoleMsgData;
 import com.pc.common.utils.ThreadSleepUtils;
 import lombok.Data;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -21,6 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  **/
 @Data
 public class RoomServer {
+
+    private Logger log = LogManager.getLogger(RoomServer.class);
 
     /**
      * 房间内的用户， key : userId
@@ -65,7 +69,13 @@ public class RoomServer {
      */
     private String roomName;
 
+    /**
+     * 房间是否已经 开始游戏
+     */
     private AtomicBoolean isInit = new AtomicBoolean(false);
+    /**
+     * 用户准备就绪
+     */
     private AtomicBoolean isOK= new AtomicBoolean(false);
 
     public RoomServer(String id ,int maxUserSize,boolean addNpc,String roomName){
@@ -78,17 +88,16 @@ public class RoomServer {
         // 初始化用户角色
         initUserRole();
 
-        // todo 可以优化成， 有用户点击加入房间后在跑这些任务
-
-
-
         // 检测房间可用
         checkRoom();
 
     }
 
     /**
-     * 追踪玩家,并攻击
+     *  追踪玩家,并攻击
+     *   如果存在障碍物， 可以使用 bfs 寻路算法， 将路径存放起来一条一条发送数据
+     * @param user 玩家
+     * @param pcUser 电脑
      */
     private void traceUser(UserRoleMsgData user,UserRoleMsgData pcUser) {
 
@@ -113,7 +122,7 @@ public class RoomServer {
             if (distance <= Constant.attackRange && user.getUserY().intValue() == pcUser.getUserY().intValue() ) {
 
                 pcUser.setPcAttackTime(System.currentTimeMillis());
-                // todo 这一步应该异步化w
+                // todo 这一步应该异步化
                 // 攻击玩家
                 pcUser.setAttack(true);
                 Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
@@ -135,40 +144,41 @@ public class RoomServer {
                 pcUser.setAttack(false);
                 msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
                 putMsg(msg);
-            }else{
-                // 开始追踪玩家,移动到攻击范围内
-                // 判断玩家方向
-                // 坐标轴， 左上是 0,0
-                int monsterX=pcUser.getUserX(),monsterY=pcUser.getUserY();
-                if(user.getUserX()-Constant.attackRange>pcUser.getUserX()){
-                    // 在右边
-                    monsterX+=Constant.NPCSpeed;
-                    pcUser.setDirection(1);
-                }else if(user.getUserX()-Constant.attackRange < pcUser.getUserX()){
-                    monsterX-=Constant.NPCSpeed;
-                    pcUser.setDirection(-1);
-                }
-                // todo   Constant.NPCSpeed  大于一的话， 会跟 用户坐标对不上，导致一直上下移动bug
-                //  所以这个绝对值比较为了解决这一个问题，
-                if(Math.abs(user.getUserY() - pcUser.getUserY())<=2){
-                    monsterY = user.getUserY();
-                }
-                else if(user.getUserY()>pcUser.getUserY()){
-                    // 在下边
-                    monsterY+=Constant.NPCSpeed;
-                }else if(user.getUserY()< pcUser.getUserY()){
-                    monsterY-=Constant.NPCSpeed;
-                }
-
-
-                pcUser.setUserX(monsterX);
-                pcUser.setUserY(monsterY);
-                Msg msg = new Msg();
-                msg.setCmd(ServerCmd.USER_MOVE.getValue());
-                msg.setUserId(pcUser.getUserId());
-                msg.setData(JSON.toJSONString(pcUser));
-                this.putMsg(msg);
+                return;
             }
+
+            // 开始追踪玩家,移动到攻击范围内
+            // 判断玩家方向
+            // 坐标轴， 左上是 0,0
+            int monsterX = pcUser.getUserX();
+            int monsterY = pcUser.getUserY();
+            if(user.getUserX()-Constant.attackRange>pcUser.getUserX()){
+                // 在右边
+                monsterX+=Constant.NPCSpeed;
+                pcUser.setDirection(1);
+            }else if(user.getUserX()-Constant.attackRange < pcUser.getUserX()){
+                monsterX-=Constant.NPCSpeed;
+                pcUser.setDirection(-1);
+            }
+            // todo   Constant.NPCSpeed  大于一的话， 会跟 用户坐标对不上，导致一直上下移动bug
+            //  所以这个绝对值比较为了解决这一个问题，
+            if(Math.abs(user.getUserY() - pcUser.getUserY())<=2){
+                monsterY = user.getUserY();
+            }
+            else if(user.getUserY()>pcUser.getUserY()){
+                // 在下边
+                monsterY+=Constant.NPCSpeed;
+            }else if(user.getUserY()< pcUser.getUserY()){
+                monsterY-=Constant.NPCSpeed;
+            }
+
+            pcUser.setUserX(monsterX);
+            pcUser.setUserY(monsterY);
+            Msg msg = new Msg();
+            msg.setCmd(ServerCmd.USER_MOVE.getValue());
+            msg.setUserId(pcUser.getUserId());
+            msg.setData(JSON.toJSONString(pcUser));
+            this.putMsg(msg);
 
         }
     }
@@ -198,7 +208,7 @@ public class RoomServer {
             Iterator<Map.Entry<String, UserRoleMsgData>> iterator = npcUser.entrySet().iterator();
             while (iterator.hasNext()){
                 Map.Entry<String, UserRoleMsgData> next = iterator.next();
-                if(next.getValue().getIsOver()){
+                if(next.getValue().getIsOver().equals(Boolean.TRUE)){
                     // 已经死亡了, 移除该npc
                     iterator.remove();
                     // 短暂保留 死亡画面
@@ -236,7 +246,7 @@ public class RoomServer {
             }
 
 
-        },3,70,TimeUnit.MILLISECONDS);
+        },2000,100,TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -274,97 +284,97 @@ public class RoomServer {
             Iterator<Map.Entry<String, SkillMsgData>> iterator = skillMsgDataMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, SkillMsgData> entry = iterator.next();
+                SkillMsgData skillMsgData = entry.getValue();
                 // 技能移动
-                entry.getValue().move();
-                // 检测技能是否有效
-                if(entry.getValue().checkSkill()){
-                    // 检测是否跟用户发生碰撞， 并扣血
-                    if(detectSkillHit(entry.getValue())){
+                skillMsgData.move();
+                // 检测技能是否有效 && 检测是否跟用户发生碰撞， 并扣血
+                if(skillMsgData.checkSkill()  ){
+                    if(detectSkillHit(skillMsgData)){
                         // 移除该技能
                         iterator.remove();
                     }
                 }else{
                     // 技能失效
-                    Msg msg = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), entry.getValue().getUserId(), entry.getValue());
+                    Msg msg = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), skillMsgData.getUserId(), skillMsgData);
                     putMsg(msg);
                     // 移除该技能
                     iterator.remove();
                 }
             }
+            // 发送移动技能消息给用户
             skillMsgDataMap.forEach((k,v)->{
                 Msg msg = Msg.getMsg(ServerCmd.SKILL_MOVE.getValue(), v.getUserId(), v);
                 putMsg(msg);
             });
 
-        },1,10,TimeUnit.MILLISECONDS);
+        },1,20,TimeUnit.MILLISECONDS);
     }
 
     /**
      * 检测 技能是否命中了 某个玩家
+     *  遍历所有玩家，
+     *   排除自己， 判断技能是否跟玩家在同一条线上， 玩家释放已经死亡， 并且是否 发生矩形碰撞
      * @param skillMsgData
+     * @return true : 技能已经失效， false :  技能未被失效
      */
     private boolean detectSkillHit(SkillMsgData skillMsgData) {
         Set<Map.Entry<String, UserModel>> entries = user.entrySet();
         for (Map.Entry<String, UserModel> e : entries){
-            String k = e.getKey();
             UserModel userModel =e.getValue();
-            if(!k.equals(skillMsgData.getUserId())){
-                try {
-                    // 不是自己释放的技能 , 技能跟玩家站在一条线上, 并且玩家还没有死
-                    if( skillMsgData.getY() == userModel.getUserRoleMsgData().getUserY()
-                            && skillMsgData.rectangle().intersects(userModel.getUserRoleMsgData().rectangle())
-                        && !userModel.getUserRoleMsgData().getIsOver()
-                    ){
-                        // 血量减少
-                        UserRoleMsgData userRoleMsgData = userModel.getUserRoleMsgData();
-                        int hp = userRoleMsgData.getHp()  -   Constant.skillHarm;
-                        userRoleMsgData.setHp(hp<0?0:hp);
-                        userRoleMsgData.setIsOver(hp<=0);
-                        Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), k, userRoleMsgData);
-                        putMsg(msg);
-
-                        // 发送技能失效
-                        Msg msg2 = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), k, skillMsgData);
-                        putMsg(msg2);
-                        return true;
-                    }
-                }catch (Exception re){
-                    re.printStackTrace();
+            UserRoleMsgData userRoleMsgData = userModel.getUserRoleMsgData();
+            // 不是自己释放的技能
+            if(!e.getKey().equals(skillMsgData.getUserId())){
+                //碰撞检测， 并且发送碰撞结果 消息
+                if(collisionDetectionAndSendMsg(skillMsgData, userRoleMsgData)){
+                    // 技能失效
+                    return true;
                 }
-
             }
         }
-
+        UserRoleMsgData npcUserMsaData = npcUser.get(skillMsgData.getUserId());
+        if(npcUserMsaData !=null){
+            // 电脑玩家 对电脑玩家不生效
+            // 返回 false 代表技能没有失效
+            return false;
+        }
         // 检测电脑玩家
         Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
         for (Map.Entry<String, UserRoleMsgData> e : npc){
-            String k = e.getKey();
             UserRoleMsgData userRoleMsgData =e.getValue();
-            if(!k.equals(skillMsgData.getUserId())){
-                try {
-                    // 不是自己释放的技能 , 技能跟玩家站在一条线上, 并且玩家还没有死
-                    if( skillMsgData.getY() == userRoleMsgData.getUserY()
-                            && skillMsgData.rectangle().intersects(userRoleMsgData.rectangle())
-                            && !userRoleMsgData.getIsOver()
-                    ){
-                        // 血量减少
-                        int hp = userRoleMsgData.getHp()  -   Constant.skillHarm;
-                        userRoleMsgData.setHp(hp<0?0:hp);
-                        userRoleMsgData.setIsOver(hp<=0);
-                        Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), k, userRoleMsgData);
-                        putMsg(msg);
-                        // 发送技能失效
-                        Msg msg2 = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), k, skillMsgData);
-                        putMsg(msg2);
-                        return true;
-                    }
-                }catch (Exception re){
-                    re.printStackTrace();
-                }
+            //  技能跟玩家站在一条线上, 并且玩家还没有死， 发送碰撞
+            if(collisionDetectionAndSendMsg(skillMsgData, userRoleMsgData)){
+                return true;
             }
         }
-
+        // 返回 false 代表技能没有失效
         return false;
+    }
+
+    /**
+     *   封装公共代码, 碰撞检测， 并且发送碰撞结果 消息
+     * @param skillMsgData 技能
+     * @param userRoleMsgData 用户
+     * @return true
+     */
+    private boolean collisionDetectionAndSendMsg(SkillMsgData skillMsgData,UserRoleMsgData userRoleMsgData){
+
+        // todo  矩形碰撞 应该 拿 玩家的非攻击状态下的 矩形， 不然一定概率性会出现， 玩家在攻击时， 被攻击的范围增大
+        //  技能跟玩家站在一条线上, 并且玩家还没有死， 发送碰撞
+        if( skillMsgData.getY() == userRoleMsgData.getUserY()
+                && skillMsgData.rectangle().intersects(userRoleMsgData.commonRectangle())
+                && !userRoleMsgData.getIsOver() ){
+            // 血量减少
+            int hp = userRoleMsgData.getHp()  -   Constant.skillHarm;
+            userRoleMsgData.setHp(hp<0?0:hp);
+            userRoleMsgData.setIsOver(hp<=0);
+            Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), userRoleMsgData.getUserId(), userRoleMsgData);
+            putMsg(msg);
+            // 发送技能失效
+            Msg msg2 = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), userRoleMsgData.getUserId(), skillMsgData);
+            putMsg(msg2);
+            return true;
+        }
+        return  false;
     }
 
     /**
@@ -384,6 +394,7 @@ public class RoomServer {
                         putMsg(msg);
 
                     });
+                    // 将房间状态设置成 以初始化
                     isInit.set(true);
 
                     if(addNpc){
@@ -398,59 +409,12 @@ public class RoomServer {
                     recoverMpAndCheckUserStatus();
 
                 }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
+                ThreadSleepUtils.sleep(1000);
+
             }
         });
 
     }
-
-
-    /**
-     * 普通攻击
-     * @param take
-     */
-    public void userAttack(UserRoleMsgData take){
-        Set<Map.Entry<String, UserModel>> entries = user.entrySet();
-        for(Map.Entry<String, UserModel> entry : entries){
-            if(!entry.getKey().equals(take.getUserId())){
-                // 不是自己的普通攻击,在同一条直线上
-                if( take.getUserY().equals(entry.getValue().getUserRoleMsgData().getUserY())
-                        &&  take.rectangle().intersects(entry.getValue().getUserRoleMsgData().rectangle())){
-                    // 血量减少
-                    UserRoleMsgData userRoleMsgData = entry.getValue().getUserRoleMsgData();
-                    int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
-                    userRoleMsgData.setHp(hp<0?0:hp);
-                    userRoleMsgData.setIsOver(hp<=0);
-                    Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
-                    putMsg(msg);
-                }
-            }
-        }
-        if(take.getChasingUserId() !=null){
-            // 如果是电脑玩家发起的攻击， 那么对电脑玩家不生效
-            return;
-        }
-        //todo  检测电脑玩家
-        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
-        for(Map.Entry<String, UserRoleMsgData> entry : npc){
-                if( take.getUserY().equals(entry.getValue().getUserY())
-                        &&  take.rectangle().intersects(entry.getValue().rectangle())
-                ){
-                    // 血量减少
-                    UserRoleMsgData userRoleMsgData = entry.getValue();
-                    int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
-                    userRoleMsgData.setHp(hp<0?0:hp);
-                    userRoleMsgData.setIsOver(hp<=0);
-                    Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
-                    putMsg(msg);
-                }
-        }
-
-    }
-
 
     /**
      * 检测所有玩家的普通攻击 是否命中
@@ -459,16 +423,17 @@ public class RoomServer {
         threadPoolExecutors.execute(()->{
             while (true){
                 try {
-                    List<Msg> list = new ArrayList<>();
-
                     // take 发动攻击的人
                     UserRoleMsgData take = attackQueue.take();
                     Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                     for(Map.Entry<String, UserModel> entry : entries){
                         if(!entry.getKey().equals(take.getUserId())){
+
+                            // todo  矩形碰撞 应该 拿 玩家的非攻击状态下的 矩形， 不然一定概率性会出现， 玩家在攻击时， 被攻击的范围增大
+
                             // 不是自己的普通攻击,在同一条直线上
                             if( take.getUserY().equals(entry.getValue().getUserRoleMsgData().getUserY())
-                                    &&  take.rectangle().intersects(entry.getValue().getUserRoleMsgData().rectangle())){
+                                    &&  take.attackRectangle().intersects(entry.getValue().getUserRoleMsgData().commonRectangle())){
                                 // 血量减少
                                 UserRoleMsgData userRoleMsgData = entry.getValue().getUserRoleMsgData();
                                 int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
@@ -481,33 +446,25 @@ public class RoomServer {
                             }
                         }
                     }
-                    try {
-                        if(take.getChasingUserId() ==null){
-                            //todo  检测电脑玩家
-                            Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
-                            for(Map.Entry<String, UserRoleMsgData> entry : npc){
-                                if( take.getUserY().equals(entry.getValue().getUserY())
-                                        &&  take.rectangle().intersects(entry.getValue().rectangle())
-                                ){
-                                    // 血量减少
-                                    UserRoleMsgData userRoleMsgData = entry.getValue();
-                                    int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
-                                    userRoleMsgData.setHp(hp<0?0:hp);
-                                    userRoleMsgData.setIsOver(hp<=0);
-                                    Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
-                                    putMsg(msg);
-                                }
+                    if(take.getChasingUserId() ==null){
+                        //  检测电脑玩家
+                        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
+                        for(Map.Entry<String, UserRoleMsgData> entry : npc){
+                            if( take.getUserY().equals(entry.getValue().getUserY())
+                                    &&  take.rectangle().intersects(entry.getValue().rectangle())
+                            ){
+                                // 血量减少
+                                UserRoleMsgData userRoleMsgData = entry.getValue();
+                                int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
+                                userRoleMsgData.setHp(hp<0?0:hp);
+                                userRoleMsgData.setIsOver(hp<=0);
+                                Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
+                                putMsg(msg);
                             }
                         }
-                    }catch (Exception e){
-                        e.printStackTrace();
                     }
-
-                    // 统一投递
-//                    list.forEach(a->putMsg(a));
                 } catch (InterruptedException e) {
-                    System.out.println("检测普通失败");
-                    e.printStackTrace();
+                    log.error("cmd = checkUserAttack | msg = 普通攻击检测失败 | roomId ={} ",e);
                 }
             }
         });
@@ -546,7 +503,7 @@ public class RoomServer {
             while (true){
                 // 房间可用
                 if(user.size() == 0 && isInit.get()){
-                    System.out.println("重置房间：" + id);
+                    log.info("cmd =checkRoom | msg = 重置房间 | roomId ={}",id);
                     isInit.set(false);
                     isOK.set(false);
                     user.clear();
@@ -555,10 +512,8 @@ public class RoomServer {
                     npcUser.clear();
                     // 给所有连接用户发送 刷新房间消息
                 }
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                }
+                ThreadSleepUtils.sleep(5000);
+
             }
 
         });
@@ -572,7 +527,6 @@ public class RoomServer {
         threadPoolExecutors.execute(()->{
             while (true){
                 Msg msg = getMsg();
-//                System.out.println("房间"+id+"发送消息"+msg);
                 Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                 for(Map.Entry<String, UserModel> entry : entries){
                     entry.getValue().getChannel().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
@@ -588,8 +542,7 @@ public class RoomServer {
         try {
             queue.put(msg);
         } catch (InterruptedException e) {
-            System.out.println("发送消息失败");
-            e.printStackTrace();
+            log.error("cmd = putMsg | roomId ={} | msg = 消息加入队列中失败 | msg = {} ",id,msg,e);
         }
     }
 
@@ -601,17 +554,15 @@ public class RoomServer {
         try {
             attackQueue.put(userRoleMsgData);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("cmd = putAttackMsg | roomId ={} | msg = 投递 攻击检测队列 | userRoleMsgData = {} ",id,userRoleMsgData,e);
         }
     }
 
     private Msg getMsg(){
         try {
-//            System.out.println("队列大小："+queue.size());
-            Msg take = queue.take();
-            return take;
+            return queue.take();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("cmd = getMsg | roomId ={} | msg = 获取消息失败  ",id,e);
         }
         throw new RuntimeException("消息为空");
     }

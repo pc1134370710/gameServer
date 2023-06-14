@@ -163,4 +163,31 @@ public class UserRoleMsgData {
         }
     }
 
+
+
+    /**
+     * 非攻击状态下的矩形
+     * @return
+     */
+    public Rectangle commonRectangle() {
+        return new Rectangle(userX,userY-8,45,130);
+    }
+
+
+    /**
+     * 攻击状态下的矩形
+     * @return
+     */
+    public Rectangle attackRectangle() {
+        if(direction !=null && direction<0){
+            // 往左边
+            return new Rectangle(userX-100,userY-8,200,130);
+        }else{
+            // 往右边
+            return new Rectangle(userX-35,userY-8,200,130);
+        }
+    }
+
+
+
 }

@@ -106,7 +106,6 @@ public class GamePanel extends JPanel implements KeyListener {
                 if(init.get()){
                     return;
                 }
-                System.out.println("首次启动游戏初始化游戏面板");
                 // 初始化游戏画板
                 // bgr颜色模式   定义画布大小
                 this.bufferedImage   = new BufferedImage(Constant.withe, Constant.height, BufferedImage.TYPE_3BYTE_BGR);

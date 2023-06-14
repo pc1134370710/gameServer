@@ -12,6 +12,8 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @description:
@@ -20,6 +22,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  */
 public class Client {
 
+    private Logger log = LogManager.getLogger(Client.class);
 
     /**
      * 游戏通信连接管道
@@ -69,7 +72,7 @@ public class Client {
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         gameChannel.writeAndFlush(rpcProtocol);
-        System.out.println("发送成功"+ msg);
+        log.info("cmd = sendMsg | msg ={}",msg );
     }
 
     /**
@@ -82,7 +85,7 @@ public class Client {
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         roomChannel.writeAndFlush(rpcProtocol);
-        System.out.println("发送成功"+ msg);
+        log.info("cmd = sendRoomMsg | msg ={}",msg );
     }
 
 
