@@ -73,12 +73,14 @@ public class RoomServer {
      */
     private BlockingQueue<UserRoleMsgData> attackQueue = new LinkedBlockingQueue<>();
 
-    private ThreadPoolExecutor threadPoolExecutors = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors()+2,Runtime.getRuntime().availableProcessors()*2+2
+//    private ThreadPoolExecutor threadPoolExecutors = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors()+2,Runtime.getRuntime().availableProcessors()*2+2
+//            ,60, TimeUnit.SECONDS,new ArrayBlockingQueue<>(1024));
+    private ThreadPoolExecutor threadPoolExecutors = new ThreadPoolExecutor(10,20
             ,60, TimeUnit.SECONDS,new ArrayBlockingQueue<>(1024));
     /**
      * 定时
      */
-    private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors()+2);
+    private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(10);
 
     // 最大游戏人数量
     private int maxUserSize = 2;

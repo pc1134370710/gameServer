@@ -69,7 +69,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcProtocol rpcProtocol) throws Exception {
         String json = new String(rpcProtocol.getContent());
         Msg msg = JSON.parseObject(json, Msg.class);
-
+        log.info("收到消息"+msg);
         ServerCmdHandler cmdHandle = ServerCmdHandleFactory.getCmdHandle(msg.getCmd());
         cmdHandle.doHandle(msg, channelHandlerContext.channel());
 
