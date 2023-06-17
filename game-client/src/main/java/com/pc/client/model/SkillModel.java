@@ -75,22 +75,10 @@ public class SkillModel  extends BasicModel{
         }
         this.gameGraphics2D.setColor(Color.RED);
         this.gameGraphics2D.drawImage(image,X,Y+30,65,75,null);
-//        move(); 交由服务器移动技能
 
     }
 
 
-    /**
-     * 技能移动
-     */
-    public void move(){
-        this.X += speed * isLeftMove;
-    }
-
-    public  Rectangle monsterRectangle() {
-        // 这里的x y 是
-        return new Rectangle(this.X,this.Y,65,75);
-    }
     public void analysisMsg(SkillMsgData skillMsgData){
         this.X = skillMsgData.getX();
         this.Y = skillMsgData.getY();

@@ -34,6 +34,9 @@ public class Client {
      */
     private  Channel roomChannel;
 
+    private  Channel chatChannel;
+    private  Channel taskChannel;
+
     private EventLoopGroup clientGroup = new NioEventLoopGroup();
 
     public Client() {
@@ -47,6 +50,8 @@ public class Client {
     public void  initGameChannel(){
         try {
             gameChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
+            chatChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
+            taskChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -59,9 +64,13 @@ public class Client {
         System.out.println("重置连接");
         if(gameChannel!=null){
             gameChannel.close();
+            chatChannel.close();
+            taskChannel.close();
           }
         try {
             gameChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
+            chatChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
+            taskChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -72,6 +81,32 @@ public class Client {
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         gameChannel.writeAndFlush(rpcProtocol);
+        log.info("cmd = sendMsg | msg ={}",msg );
+    }
+
+    /**
+     * 发送聊天消息
+     * @param msg
+     */
+    public  void sendChatMsg(Msg msg){
+        RpcProtocol rpcProtocol = new RpcProtocol();
+        String json = JSON.toJSONString(msg);
+        rpcProtocol.setLen(json.getBytes().length);
+        rpcProtocol.setContent(json.getBytes());
+        chatChannel.writeAndFlush(rpcProtocol);
+        log.info("cmd = sendChatMsg | msg ={}",msg );
+    }
+
+    /**
+     * 注册 服务器定时任务刷新 消息
+     * @param msg
+     */
+    public  void registerTask(Msg msg){
+        RpcProtocol rpcProtocol = new RpcProtocol();
+        String json = JSON.toJSONString(msg);
+        rpcProtocol.setLen(json.getBytes().length);
+        rpcProtocol.setContent(json.getBytes());
+        chatChannel.writeAndFlush(rpcProtocol);
         log.info("cmd = sendMsg | msg ={}",msg );
     }
 

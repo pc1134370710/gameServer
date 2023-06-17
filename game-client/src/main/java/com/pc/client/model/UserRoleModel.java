@@ -1,5 +1,6 @@
 package com.pc.client.model;
 
+import com.pc.client.utils.AudioPlayer;
 import com.pc.client.cache.LocalGameInfo;
 import com.pc.common.Constant;
 import com.pc.common.ImageUtils;
@@ -10,7 +11,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -230,6 +230,8 @@ public class UserRoleModel  extends BasicModel {
         if(this.attack.get()){
             // 如果攻击状态， 直接将图片改成最后一个
             this.image = list.get(list.size()-1);
+            // 播放攻击生效
+            AudioPlayer.playerAttack();
         }else {
             // 恢复图片
             this.image = list.get(imageRand.get());

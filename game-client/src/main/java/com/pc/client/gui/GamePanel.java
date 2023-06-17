@@ -2,6 +2,7 @@ package com.pc.client.gui;
 
 
 import com.alibaba.fastjson.JSON;
+import com.pc.client.utils.AudioPlayer;
 import com.pc.client.cache.LocalGameInfo;
 import com.pc.client.model.SkillModel;
 import com.pc.client.model.UserRoleModel;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @description:  游戏面板
@@ -47,7 +49,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
     public GamePanel() {
         addKeyListener(this);
-        setFocusable(false);
+        setFocusable(true);
     }
 
     /**
@@ -113,6 +115,11 @@ public class GamePanel extends JPanel implements KeyListener {
                 this.graphics2D = bufferedImage.createGraphics();
                 this.graphics2D.setColor(Color.GRAY);
                 this.graphics2D.drawRect(0,0,Constant.withe,Constant.height);
+
+                // 开始游戏音效
+//                AudioPlayer.playerStartGame();
+
+
                 init.compareAndSet(false,true);
 
             }
@@ -151,6 +158,10 @@ public class GamePanel extends JPanel implements KeyListener {
 
     // 防止一直 按住攻击
     boolean keyJPressed = false;
+
+
+    AtomicInteger attack = new AtomicInteger(1);
+
     @Override
     public void keyPressed(KeyEvent e) {
         // 玩家死亡游戏结束了， 不给按按键
@@ -172,6 +183,12 @@ public class GamePanel extends JPanel implements KeyListener {
         }
         // 普通攻击
         if(code == KeyEvent.VK_J && keyJPressed==false){
+            attack.incrementAndGet();
+            attack.compareAndSet(1000,1);
+            if(attack.get()%2==1){
+                return;
+            }
+
             keyJPressed = true;
             UserRoleModel userRoleModel = LocalGameInfo.userRoleModelMap.get(LocalGameInfo.userId);
             UserRoleMsgData userRoleMsgData = new UserRoleMsgData();

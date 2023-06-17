@@ -42,6 +42,15 @@ public class Msg {
         }
         return msg;
     }
-
+    public static  Msg getMsg(int cmd,String userId,String roomId,Object data){
+        Msg msg = new Msg();
+        msg.setCmd(cmd);
+        msg.setUserId(userId);
+        msg.setRoomId(roomId);
+        if(data!=null){
+            msg.setData(JSON.toJSONString(data));
+        }
+        return msg;
+    }
 
 }

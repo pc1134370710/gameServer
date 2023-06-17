@@ -28,10 +28,7 @@ public class Constant {
      */
     public static final String jnRightPath = "/3.png";
     public static final String jnLeftPath = "/4.png";
-    /**
-     * 小怪动作
-     */
-    public static final List<String> actionList = Arrays.asList("/鸟1.png"  ,"/鸟2.png");
+
     public static final List<String> userRichtList = Arrays.asList("/吕布1.png"  ,"/吕布2.png","/吕布3.png","/吕布4.png","/吕布5.png","/吕布6.png","/吕布7.png","/吕布8.png");
     public static final List<String> userLeftList = Arrays.asList("/吕布L1.png"  ,"/吕布L2.png","/吕布L3.png","/吕布L4.png","/吕布L5.png","/吕布L6.png","/吕布L7.png","/吕布L8.png");
 
@@ -45,12 +42,12 @@ public class Constant {
     /**
      * 玩家移动速度
      */
-    public static final int userRoleSpeed=3;
-    public static final int NPCSpeed=3;
+    public static final int userRoleSpeed=4;
+    public static final int NPCSpeed=2;
     /**
-     * 闪现
+     * 闪现 距离
      */
-    public static final int SELIDE_SEPEDD=200;
+    public static final int SELIDE_SEPEDD=300;
     /**
      * 技能血量
      */

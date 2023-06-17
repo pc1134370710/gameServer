@@ -76,6 +76,10 @@ public class RoomButton  extends JButton  implements MouseListener{
             msg.setRoomId(roomId);
             LocalGameInfo.client.sendMsg(msg);
 
+            LocalGameInfo.client.sendChatMsg(Msg.getMsg(ServerCmd.INIT_CHAT.getValue(),LocalGameInfo.userId,roomId,null));
+            LocalGameInfo.client.registerTask(Msg.getMsg(ServerCmd.REGISTER_TASK.getValue(),LocalGameInfo.userId,roomId,null));
+
+
         }
     }
     @Override

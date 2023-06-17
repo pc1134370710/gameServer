@@ -8,6 +8,7 @@ import com.pc.common.msg.Msg;
 import com.pc.common.msg.SkillMsgData;
 import com.pc.common.msg.UserRoleMsgData;
 import com.pc.common.utils.ThreadSleepUtils;
+import io.netty.channel.Channel;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +33,18 @@ public class RoomServer {
     private  Map<String,UserModel> user = new ConcurrentHashMap<>();
 
     /**
+     * 存放房间内聊天通道 ，key : userId
+     */
+    private Map<String, Channel> chatChannel = new ConcurrentHashMap<>();
+
+    /**
+     * 存放房间的 定时任务的通道消息 ， 防止所有消息一条通道通信，消息阻塞严重
+     */
+    private Map<String, Channel> taskChannel = new ConcurrentHashMap<>();
+
+
+
+    /**
      * 房间内技能情况
      */
     private Map<String, SkillMsgData> skillMsgDataMap = new ConcurrentHashMap<>();
@@ -48,15 +61,24 @@ public class RoomServer {
     private String id;
     private BlockingQueue<Msg> queue = new LinkedBlockingQueue<>();
     /**
+     * 定时任务消息队列
+     */
+    private BlockingQueue<Msg> taskMsgQueue = new LinkedBlockingQueue<>();
+    /**
+     * 聊天消息
+     */
+    private BlockingQueue<Msg> chatMsgQueue = new LinkedBlockingQueue<>();
+    /**
      * 普通攻击检测队列
      */
     private BlockingQueue<UserRoleMsgData> attackQueue = new LinkedBlockingQueue<>();
 
-    private ThreadPoolExecutor threadPoolExecutors = new ThreadPoolExecutor(10,20,60, TimeUnit.SECONDS,new ArrayBlockingQueue<>(1024));
+    private ThreadPoolExecutor threadPoolExecutors = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors()+2,Runtime.getRuntime().availableProcessors()*2+2
+            ,60, TimeUnit.SECONDS,new ArrayBlockingQueue<>(1024));
     /**
      * 定时
      */
-    private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(4);
+    private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors()+2);
 
     // 最大游戏人数量
     private int maxUserSize = 2;
@@ -85,6 +107,8 @@ public class RoomServer {
         this.maxUserSize = maxUserSize;
         // 获取消息发送
         sendMsg();
+        taskSendMsgQueue();
+        chatSendMsgQueue();
         // 初始化用户角色
         initUserRole();
 
@@ -123,27 +147,31 @@ public class RoomServer {
 
                 pcUser.setPcAttackTime(System.currentTimeMillis());
                 // todo 这一步应该异步化
-                // 攻击玩家
-                pcUser.setAttack(true);
-                Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
-                putMsg(msg);
-                // 投入攻击队列中进行检测
-                UserRoleMsgData temp = new UserRoleMsgData();
-                temp.setUserX(pcUser.getUserX());
-                temp.setUserY(pcUser.getUserY());
-                temp.setAttack(pcUser.getAttack());
-                temp.setUserId(pcUser.getUserId());
-                temp.setDirection(pcUser.getDirection());
-                temp.setHp(pcUser.getHp());
-                temp.setMp(pcUser.getMp());
-                // 重新new 一个对象， 防止引用传递，将该对象修改掉
-                putAttackMsg(temp);
+                threadPoolExecutors.execute(()->{
+                    // 攻击玩家
+                    pcUser.setAttack(true);
+                    Msg msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
+                    putTaskMsg(msg);
+                    // 投入攻击队列中进行检测
+                    UserRoleMsgData temp = new UserRoleMsgData();
+                    temp.setUserX(pcUser.getUserX());
+                    temp.setUserY(pcUser.getUserY());
+                    temp.setAttack(pcUser.getAttack());
+                    temp.setUserId(pcUser.getUserId());
+                    temp.setDirection(pcUser.getDirection());
+                    temp.setUserId(pcUser.getUserId());
+                    temp.setIsNpc(pcUser.getIsNpc());
+                    temp.setHp(pcUser.getHp());
+                    temp.setMp(pcUser.getMp());
+                    // 重新new 一个对象， 防止引用传递，将该对象修改掉
+                    putAttackMsg(temp);
 
-                ThreadSleepUtils.sleep(200);
-                // 取消攻击
-                pcUser.setAttack(false);
-                msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
-                putMsg(msg);
+                    ThreadSleepUtils.sleep(200);
+                    // 取消攻击
+                    pcUser.setAttack(false);
+                    msg = Msg.getMsg(ServerCmd.USER_ATTACK.getValue(), pcUser.getUserId(), pcUser);
+                    putTaskMsg(msg);
+                });
                 return;
             }
 
@@ -178,7 +206,7 @@ public class RoomServer {
             msg.setCmd(ServerCmd.USER_MOVE.getValue());
             msg.setUserId(pcUser.getUserId());
             msg.setData(JSON.toJSONString(pcUser));
-            this.putMsg(msg);
+            this.putTaskMsg(msg);
 
         }
     }
@@ -188,63 +216,73 @@ public class RoomServer {
     private void initNpcUser() {
 
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(()->{
-            // 玩家准备就绪， 并且玩家以及初始化后才初始化 npc
-            if(!checkUserIsOk() && !isInit.get()){
-                return;
-            }
-            // 场上电脑 少于5个
-            if(npcUser.size() <2){
-                // 添加
-                for(int i = 0; i<2-npcUser.size();i++){
-                    UserRoleMsgData userRoleMsgData  = new UserRoleMsgData().initNpc();
-                    userRoleMsgData.setUserId("电脑"+System.currentTimeMillis());
-                    npcUser.put(userRoleMsgData.getUserId(),userRoleMsgData);
-                    Msg msg = Msg.getMsg(ServerCmd.INIT_NPC.value, userRoleMsgData.getUserId(), userRoleMsgData);
-                    putMsg(msg);
-                }
-            }
+            try {
 
-
-            Iterator<Map.Entry<String, UserRoleMsgData>> iterator = npcUser.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, UserRoleMsgData> next = iterator.next();
-                if(next.getValue().getIsOver().equals(Boolean.TRUE)){
-                    // 已经死亡了, 移除该npc
-                    iterator.remove();
-                    // 短暂保留 死亡画面
-                    ThreadSleepUtils.sleep(400);
-                    //  发送 电脑玩家对出游戏命令
-                    Msg msg = Msg.getMsg(ServerCmd.EXIT_GAME.getValue(), next.getValue().getUserId(), next.getValue());
-                    putMsg(msg);
+                // 玩家准备就绪， 并且玩家以及初始化后才初始化 npc
+                if(!checkUserIsOk() && !isInit.get()){
                     return;
                 }
-                // 如果该电脑玩家已经在 追踪 玩家了
-                if(next.getValue().getChasingUserId() !=null){
-                    UserModel userModel = user.get(next.getValue().getChasingUserId());
-                    if(userModel == null){
-                        // 为空的情况， 可能是玩家 中途退出了游戏
+                // 场上电脑 少于5个
+                if(npcUser.size() <2){
+                    // 添加
+                    for(int i = 0; i<2-npcUser.size();i++){
+                        UserRoleMsgData userRoleMsgData  = new UserRoleMsgData().initNpc();
+                        userRoleMsgData.setUserId("电脑"+System.currentTimeMillis());
+                        npcUser.put(userRoleMsgData.getUserId(),userRoleMsgData);
+                        Msg msg = Msg.getMsg(ServerCmd.INIT_NPC.value, userRoleMsgData.getUserId(), userRoleMsgData);
+                        putTaskMsg(msg);
+                    }
+                }
+
+
+                Iterator<Map.Entry<String, UserRoleMsgData>> iterator = npcUser.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, UserRoleMsgData> next = iterator.next();
+                    if(next.getValue().getIsOver().equals(Boolean.TRUE)){
+                        // 已经死亡了, 移除该npc
+                        iterator.remove();
+                        // 短暂保留 死亡画面
+                        ThreadSleepUtils.sleep(400);
+                        //  发送 电脑玩家对出游戏命令
+                        Msg msg = Msg.getMsg(ServerCmd.EXIT_GAME.getValue(), next.getValue().getUserId(), next.getValue());
+                        putTaskMsg(msg);
                         return;
                     }
-                    traceUser(userModel.getUserRoleMsgData(),next.getValue());
-                }
-                else{
-                    // 获取所有符合追踪的玩家
-                    List<UserModel> list = new ArrayList<>();
-                    user.forEach((ku,vu)->{
-                        int distance = next.getValue().distanceCalculator(vu.getUserRoleMsgData().getUserX(), vu.getUserRoleMsgData().getUserY());
-                        if (distance <= Constant.senseRange ) {
-                            list.add(vu);
+                    // 如果该电脑玩家已经在 追踪 玩家了
+                    if(next.getValue().getChasingUserId() !=null){
+                        UserModel userModel = user.get(next.getValue().getChasingUserId());
+                        if(userModel == null){
+                            next.getValue().setChasingUserId(null);
+                            // 为空的情况， 可能是玩家 中途退出了游戏
+                            return;
                         }
-                    });
-                    if(list.size() !=0){
-                        // 随机选择一个玩家 进行跟踪打击
-                        int i = ThreadLocalRandom.current().nextInt(list.size());
-                        traceUser(list.get(i).getUserRoleMsgData(),next.getValue());
+                        if(userModel.getUserRoleMsgData().getIsOver()){
+                            // 玩家死亡， npc 继续最终其他玩家
+                            next.getValue().setChasingUserId(null);
+                            return;
+                        }
+                        traceUser(userModel.getUserRoleMsgData(),next.getValue());
                     }
+                    else{
+                        // 获取所有符合追踪的玩家
+                        List<UserModel> list = new ArrayList<>();
+                        user.forEach((ku,vu)->{
+                            int distance = next.getValue().distanceCalculator(vu.getUserRoleMsgData().getUserX(), vu.getUserRoleMsgData().getUserY());
+                            if (distance <= Constant.senseRange ) {
+                                list.add(vu);
+                            }
+                        });
+                        if(list.size() !=0){
+                            // 随机选择一个玩家 进行跟踪打击
+                            int i = ThreadLocalRandom.current().nextInt(list.size());
+                            traceUser(list.get(i).getUserRoleMsgData(),next.getValue());
+                        }
+                    }
+
                 }
-
+            }catch (Exception e){
+                e.printStackTrace();
             }
-
 
         },2000,100,TimeUnit.MILLISECONDS);
     }
@@ -268,7 +306,7 @@ public class RoomServer {
                 temp.forEach((k,v)->{
                     UserRoleMsgData userRoleMsgData = v.getUserRoleMsgData();
                     Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), k, userRoleMsgData);
-                    putMsg(msg);
+                    putTaskMsg(msg);
                 });
 
             }
@@ -296,7 +334,7 @@ public class RoomServer {
                 }else{
                     // 技能失效
                     Msg msg = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), skillMsgData.getUserId(), skillMsgData);
-                    putMsg(msg);
+                    putTaskMsg(msg);
                     // 移除该技能
                     iterator.remove();
                 }
@@ -304,10 +342,10 @@ public class RoomServer {
             // 发送移动技能消息给用户
             skillMsgDataMap.forEach((k,v)->{
                 Msg msg = Msg.getMsg(ServerCmd.SKILL_MOVE.getValue(), v.getUserId(), v);
-                putMsg(msg);
+                putTaskMsg(msg);
             });
 
-        },1,20,TimeUnit.MILLISECONDS);
+        },1,10,TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -368,10 +406,22 @@ public class RoomServer {
             userRoleMsgData.setHp(hp<0?0:hp);
             userRoleMsgData.setIsOver(hp<=0);
             Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), userRoleMsgData.getUserId(), userRoleMsgData);
-            putMsg(msg);
+            putTaskMsg(msg);
             // 发送技能失效
             Msg msg2 = Msg.getMsg(ServerCmd.SKILL_DELETE.getValue(), userRoleMsgData.getUserId(), skillMsgData);
-            putMsg(msg2);
+            putTaskMsg(msg2);
+            if(userRoleMsgData.getIsOver()){
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("(系统消息) "+ skillMsgData.getUserId() +"将 玩家 " +userRoleMsgData.getUserId() +" 击杀");
+                Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), skillMsgData.getUserId(),id,stringBuilder.toString());
+                Msg msg1 = Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), skillMsgData.getUserId(), id, stringBuilder.toString());
+                putChatMsg(msg1);
+                String msg2Data ="(系统消息) "+ userRoleMsgData.getUserId() +" 真是菜爆了";
+                Msg msg2da = Msg.getMsg(ServerCmd.CHAT_MSG.getValue(),userRoleMsgData.getUserId(), id, msg2Data);
+                putChatMsg(msg2da);
+
+            }
+
             return true;
         }
         return  false;
@@ -402,7 +452,7 @@ public class RoomServer {
                         initNpcUser();
                     }
                     // 检测普攻， 先转换成，收到消息时处理
-                     checkUserAttack();
+                    checkUserAttack();
                     // 检测技能释放
                     checkMoveSkill();
                     // 玩家状态检测， 以及恢复MP 蓝条
@@ -428,12 +478,11 @@ public class RoomServer {
                     Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                     for(Map.Entry<String, UserModel> entry : entries){
                         if(!entry.getKey().equals(take.getUserId())){
-
                             // todo  矩形碰撞 应该 拿 玩家的非攻击状态下的 矩形， 不然一定概率性会出现， 玩家在攻击时， 被攻击的范围增大
-
-                            // 不是自己的普通攻击,在同一条直线上
+                            // 不是自己的普通攻击,在同一条直线上， 玩家没有死亡
                             if( take.getUserY().equals(entry.getValue().getUserRoleMsgData().getUserY())
-                                    &&  take.attackRectangle().intersects(entry.getValue().getUserRoleMsgData().commonRectangle())){
+                                    &&  take.attackRectangle().intersects(entry.getValue().getUserRoleMsgData().commonRectangle())
+                                    && !entry.getValue().getUserRoleMsgData().getIsOver()){
                                 // 血量减少
                                 UserRoleMsgData userRoleMsgData = entry.getValue().getUserRoleMsgData();
                                 int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
@@ -441,18 +490,32 @@ public class RoomServer {
                                 userRoleMsgData.setIsOver(hp<=0);
                                 Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
                                 putMsg(msg);
+                                if(userRoleMsgData.getIsOver()){
+                                    StringBuilder stringBuilder = new StringBuilder();
+                                    stringBuilder.append("(系统消息) "+ take.getUserId() +"将 玩家 " +entry.getKey() +" 击杀");
+                                    Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), entry.getKey(),id,stringBuilder.toString());
+                                    Msg msg1 = Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), entry.getKey(), id, stringBuilder.toString());
+
+                                    String msg2Data ="(系统消息) "+ entry.getKey() +" 真是菜爆了";
+                                    putChatMsg(msg1);
+                                    Msg msg2 = Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), entry.getKey(), id, msg2Data);
+                                    putChatMsg(msg2);
+
+                                }
+
                                 // 只能打到一个人身上
                                 // continue;
                             }
                         }
                     }
-                    if(take.getChasingUserId() ==null){
+                    // 电脑玩家不可以 对电脑玩家造成伤害哦
+                    if(!take.getIsNpc()){
                         //  检测电脑玩家
                         Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
                         for(Map.Entry<String, UserRoleMsgData> entry : npc){
                             if( take.getUserY().equals(entry.getValue().getUserY())
-                                    &&  take.rectangle().intersects(entry.getValue().rectangle())
-                            ){
+                                    &&  take.attackRectangle().intersects(entry.getValue().commonRectangle())
+                                    && !entry.getValue().getIsOver()){
                                 // 血量减少
                                 UserRoleMsgData userRoleMsgData = entry.getValue();
                                 int hp = userRoleMsgData.getHp()  -   Constant.normalAttackHarm;
@@ -460,6 +523,18 @@ public class RoomServer {
                                 userRoleMsgData.setIsOver(hp<=0);
                                 Msg msg = Msg.getMsg(ServerCmd.REFRESH_USER_INFO.getValue(), entry.getKey(), userRoleMsgData);
                                 putMsg(msg);
+
+                                if(userRoleMsgData.getIsOver()){
+                                    StringBuilder stringBuilder = new StringBuilder();
+                                    stringBuilder.append("(系统消息) "+ take.getUserId() +"将 " +entry.getKey() +" 击杀");
+                                    Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), entry.getKey(),id,stringBuilder.toString());
+                                    Msg msg1 = Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), entry.getKey(), id, stringBuilder.toString());
+                                    putChatMsg(msg1);
+//                                    String msg2Data ="(系统消息) "+ entry.getKey() +" 真是菜爆了";
+//                                    Msg msg2 = Msg.getMsg(ServerCmd.CHAT_MSG.getValue(), entry.getKey(), id, msg2Data);
+//                                    putChatMsg(msg2);
+
+                                }
                             }
                         }
                     }
@@ -534,6 +609,42 @@ public class RoomServer {
             }
         });
     }
+
+    /**
+     * 定时任务消息发送
+     */
+    private void taskSendMsgQueue(){
+        threadPoolExecutors.execute(()->{
+            while (true){
+                try {
+                    Msg msg = taskMsgQueue.take();
+                    Set<Map.Entry<String, Channel>> entries = taskChannel.entrySet();
+                    for(Map.Entry<String, Channel> entry : entries){
+                        entry.getValue().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
+                    }
+                } catch (InterruptedException e) {
+                    log.error("cmd = taskSendMsgQueue | msg = 发送定时任务消息失败",e);
+                }
+
+            }
+        });
+    }
+    private void chatSendMsgQueue(){
+        threadPoolExecutors.execute(()->{
+            while (true){
+                try {
+                    Msg  msg = chatMsgQueue.take();
+                    Set<Map.Entry<String, Channel>> entries = chatChannel.entrySet();
+                    for(Map.Entry<String, Channel> entry : entries){
+                        entry.getValue().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
+                    }
+                } catch (InterruptedException e) {
+                    log.error("cmd = chatSendMsgQueue | msg = 发送聊天消息失败",e);
+                }
+            }
+        });
+    }
+
     /**
      * 将消息加入房间队列中
      * @param msg
@@ -545,7 +656,20 @@ public class RoomServer {
             log.error("cmd = putMsg | roomId ={} | msg = 消息加入队列中失败 | msg = {} ",id,msg,e);
         }
     }
-
+    public void putTaskMsg(Msg msg){
+        try {
+            taskMsgQueue.put(msg);
+        } catch (InterruptedException e) {
+            log.error("cmd = putTaskMsg | roomId ={} | msg = 消息加入队列中失败 | msg = {} ",id,msg,e);
+        }
+    }
+    public void putChatMsg(Msg msg){
+        try {
+            chatMsgQueue.put(msg);
+        } catch (InterruptedException e) {
+            log.error("cmd = putChatMsg | roomId ={} | msg = 消息加入队列中失败 | msg = {} ",id,msg,e);
+        }
+    }
     /**
      * 投递 攻击检测队列
      * @param userRoleMsgData

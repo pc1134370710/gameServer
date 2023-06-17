@@ -63,6 +63,7 @@ public class UserRoleMsgData {
      * 电脑正在追踪的玩家
      */
     private String chasingUserId;
+    private Boolean isNpc;
 
     /**
      * 电脑玩家当前攻击时间， 用于电脑玩家停止 ，间隔后继续攻击
@@ -87,6 +88,7 @@ public class UserRoleMsgData {
         this.hp = Constant.userRoleHP;
         this.mp = Constant.userRoleMP;
         this.direction = 1;
+        this.isNpc = false;
         this.isOver = false;
         this.slide = false;
         return this;
@@ -103,6 +105,7 @@ public class UserRoleMsgData {
         this.hp = Constant.userRoleHP;
         this.mp = Constant.userRoleMP;
         this.direction = 1;
+        this.isNpc = true;
         this.isOver = false;
         this.slide = false;
         return this;

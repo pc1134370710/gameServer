@@ -34,7 +34,7 @@ public class RpcClientSyncHandler extends SimpleChannelInboundHandler<RpcProtoco
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcProtocol rpcProtocol) throws UnsupportedEncodingException {
         String json = new String(rpcProtocol.getContent(),"utf-8");
-        log.info("收到消息：{}",json);
+//        log.info("收到消息：{}",json);
         Msg msg = JSON.parseObject(json, Msg.class);
 
         // 根据命令字 获取执行器

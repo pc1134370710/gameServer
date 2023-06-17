@@ -29,7 +29,12 @@ public enum ServerCmd {
     INIT_ROOM(400,"初始化房间，命令"),
     GET_ALL_ROOM(401,"获取所有邮箱游戏房间命令")
     ,
-    GET_ONLINE_USER_SIZE(402, "获取在线用户数");
+    GET_ONLINE_USER_SIZE(402, "获取在线用户数"),
+
+    REGISTER_TASK(700, "注册聊天管道"),
+    INIT_CHAT(701, "注册聊天管道"),
+    CHAT_MSG(702, "发送聊天消息"),
+    ;
 
 
     public int value;

@@ -24,7 +24,9 @@ public class SkillMoveCmdHandler  implements CmdHandler {
         Map<String, SkillModel> stringSkillModelMap = LocalGameInfo.stringSkillModelMap;
         SkillMsgData skillMsgData = JSON.parseObject(msg.getData(), SkillMsgData.class);
         SkillModel skillModel = stringSkillModelMap.get(skillMsgData.getSkillId());
-        skillModel.setX(skillMsgData.getX());
-        skillModel.setY(skillMsgData.getY());
+        if(skillModel!=null){
+            skillModel.setX(skillMsgData.getX());
+            skillModel.setY(skillMsgData.getY());
+        }
     }
 }

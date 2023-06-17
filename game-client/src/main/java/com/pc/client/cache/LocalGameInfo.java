@@ -1,6 +1,7 @@
 package com.pc.client.cache;
 
 import com.pc.client.Client;
+import com.pc.client.gui.ChatPanel;
 import com.pc.client.gui.GamePanel;
 import com.pc.client.gui.RoomPanel;
 import com.pc.client.model.SkillModel;
@@ -73,6 +74,14 @@ public class LocalGameInfo {
      * 房间画板
      */
     public volatile static RoomPanel roomPanel;
+
+    /**
+     * 聊天窗口面板
+     */
+
+    public volatile static ChatPanel chatPanel;
+
+
 
 
     public static void clear(){

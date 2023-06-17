@@ -26,6 +26,9 @@ public class ServerCmdHandleFactory {
         cmdHandleMap.put(ServerCmd.GET_ONLINE_USER_SIZE.getValue(), new OnlineUserServerCmdHandler());
         cmdHandleMap.put(ServerCmd.EXIT_GAME.getValue(), new ExitGameServerCmdHandler());
         cmdHandleMap.put(ServerCmd.USER_INTO_ROOM.getValue(),new UserIntoRoomCmdHandler());
+        cmdHandleMap.put(ServerCmd.INIT_CHAT.getValue(),new InitChatServerCmdHandler());
+        cmdHandleMap.put(ServerCmd.REGISTER_TASK.getValue(),new RegisterTaskServerCmdHandler());
+        cmdHandleMap.put(ServerCmd.CHAT_MSG.getValue(),new ChatMsgServerCmdHandler());
 
     }
     private ServerCmdHandleFactory(){

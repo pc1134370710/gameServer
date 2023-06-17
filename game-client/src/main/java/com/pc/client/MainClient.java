@@ -1,6 +1,7 @@
 package com.pc.client;
 
 import com.pc.client.cache.LocalGameInfo;
+import com.pc.client.gui.ChatPanel;
 import com.pc.client.gui.GamePanel;
 import com.pc.client.gui.LoginUserPanel;
 import com.pc.client.gui.RoomPanel;
@@ -94,12 +95,19 @@ public class MainClient {
                     // 监听事件添加一个键盘监听事件
                     gameFrame.addKeyListener(gamePanel);
                     gamePanel.setBounds(0, 0, Constant.withe, Constant.height); // 设置游戏面板在 面板 bigpanl 中的位置跟大小
+
+
+                    ChatPanel chatPanel = new ChatPanel();
+                    gameFrame.add(chatPanel);
+                    chatPanel.setBounds(Constant.withe, 0, 350, Constant.height);
+                    LocalGameInfo.chatPanel = chatPanel;
+
                     new Thread(()->{
                         while (true){
                             // 刷新游戏界面
                             gamePanel.repaint();
                             try {
-                                Thread.sleep(10);
+                                Thread.sleep(5);
                             } catch (InterruptedException r) {
                                 r.printStackTrace();
                             }
@@ -143,7 +151,7 @@ public class MainClient {
         frame.setLayout(null);
 //        frame.setResizable(false); // 固定窗口大小
         // 设置框架的大小
-        frame.setSize(Constant.withe,Constant.height);
+        frame.setSize(Constant.withe+350,Constant.height+40);
         //设置特定组件相关的框架位置，若值为null,那么框架屏幕居中
         frame.setLocationRelativeTo(null);
         // 关闭窗口时退出程序, 指定框架关闭时的操作

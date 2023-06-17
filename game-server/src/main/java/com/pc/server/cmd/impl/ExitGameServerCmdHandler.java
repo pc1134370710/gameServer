@@ -20,6 +20,9 @@ public class ExitGameServerCmdHandler  implements ServerCmdHandler {
         RoomServer roomServer = RpcNettyServer.roomServerMap.get(msg.getRoomId());
         // 移除房间内的用户
         roomServer.getUser().remove(msg.getUserId());
+        roomServer.getTaskChannel().remove(msg.getUserId());
+        roomServer.getChatChannel().remove(msg.getUserId());
+
         // 告诉所有玩家 这个人走了， 移除改用户
         Msg msg1 = Msg.getMsg(ServerCmd.EXIT_GAME.getValue(), msg.getUserId(), null);
         roomServer.putMsg(msg1);

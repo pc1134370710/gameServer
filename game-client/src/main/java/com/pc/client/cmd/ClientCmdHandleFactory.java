@@ -30,6 +30,7 @@ public class ClientCmdHandleFactory {
         cmdHandleMap.put(ServerCmd.GET_ONLINE_USER_SIZE.getValue(), new OnlineUserCmdHandler());
         cmdHandleMap.put(ServerCmd.EXIT_GAME.getValue(), new ExitGameCmdHandler());
         cmdHandleMap.put(ServerCmd.INIT_NPC.getValue(), new InitNpcUserCmdHandler());
+        cmdHandleMap.put(ServerCmd.CHAT_MSG.getValue(), new ChatMsgCmdHandler());
 
     }
     private ClientCmdHandleFactory(){
