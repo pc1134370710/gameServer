@@ -1,4 +1,4 @@
-package com.pc.common;
+package com.pc.common.prtotcol;
 
 /**
  * @description:

@@ -15,29 +15,25 @@
  * limitations under the License.
  */
 
-package com.pc.server;
+package com.pc.server.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.pc.common.RpcProtocol;
-import com.pc.common.ServerCmd;
+import com.pc.common.netty.model.UserModel;
+import com.pc.common.prtotcol.RpcProtocol;
 import com.pc.common.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
-import com.pc.common.msg.RoomMsgData;
-import com.pc.common.msg.SkillMsgData;
-import com.pc.common.msg.UserRoleMsgData;
+import com.pc.common.netty.cache.UserCache;
 import com.pc.server.cmd.ServerCmdHandleFactory;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.IOException;
 
 public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
-    private Logger log = LogManager.getLogger(RpcServerHandler.class);
+    private static final Logger log = LogManager.getLogger(RpcServerHandler.class);
+
     /*
         handlerAdded() 当检测到新连接之后，调用 ch.pipeline().addLast(new XXXHandler()); 之后的回调
         channelRegistered() 当前的 channel 的所有的逻辑处理已经和某个 NIO 线程建立了绑定关系
@@ -48,36 +44,58 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
         channelUnregistered()  表示与这条连接对应的 NIO 线程移除掉对这条连接的处理
         handlerRemoved() 这条连接上添加的所有的业务逻辑处理器都被移除掉后调用
      */
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        UserModel userModel = UserCache.createChannel(new UserModel()
+                .setChannelId(ctx.channel().id().asShortText())
+                .setChannel(ctx.channel()));
+        log.info("用户连接 : {}", userModel);
+        super.channelActive(ctx);
+    }
+
     /**
      * 离线
+     *
      * @param ctx
      * @throws Exception
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RpcNettyServer.channelMap.remove(ctx.channel().id()+"");
-        log.info("玩家离线");
+        UserModel userModel = UserCache.getChannelInfo(ctx.channel().id().asShortText());
+        if (null != userModel) {
+            log.info("客户端 {} 离线", userModel);
+        }
+        UserCache.invalidate(ctx.channel().id().asShortText());
+        super.channelInactive(ctx);
     }
 
     /**
      * 接受消息
-     * @param channelHandlerContext
+     *
+     * @param ctx
      * @param rpcProtocol
      * @throws Exception
      */
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcProtocol rpcProtocol) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol rpcProtocol) throws Exception {
+        UserModel userModel = UserCache.getChannelInfo(ctx.channel().id().asShortText());
         String json = new String(rpcProtocol.getContent());
         Msg msg = JSON.parseObject(json, Msg.class);
-        log.info("收到消息"+msg);
+        log.info("收到消息 {} ", msg);
         ServerCmdHandler cmdHandle = ServerCmdHandleFactory.getCmdHandle(msg.getCmd());
-        cmdHandle.doHandle(msg, channelHandlerContext.channel());
-
+        cmdHandle.doHandle(msg, userModel);
     }
-
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("发生异常",cause);
+        if (cause instanceof IOException) {
+            // 远程主机强迫关闭了一个现有的连接异常
+            ctx.close();
+        } else {
+            log.warn("发生异常", cause);
+            super.exceptionCaught(ctx, cause);
+        }
     }
+
 }

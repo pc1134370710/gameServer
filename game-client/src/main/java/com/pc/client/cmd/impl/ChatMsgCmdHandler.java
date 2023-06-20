@@ -17,4 +17,5 @@ public class ChatMsgCmdHandler  implements CmdHandler {
         LocalGameInfo.chatPanel.validate();
         LocalGameInfo.chatPanel.repaint();
     }
+
 }

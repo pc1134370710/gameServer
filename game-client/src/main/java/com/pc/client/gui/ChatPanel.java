@@ -1,8 +1,7 @@
 package com.pc.client.gui;
 
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.common.Constant;
-import com.pc.common.ServerCmd;
+import com.pc.common.prtotcol.ServerCmd;
 import com.pc.common.msg.Msg;
 
 import javax.swing.*;

@@ -5,8 +5,8 @@ package com.pc.client.utils;
  * @author: pangcheng
  * @create: 2023-06-17 11:14
  **/
-import com.pc.common.ImageUtils;
-import com.pc.common.utils.ThreadSleepUtils;
+import cn.hutool.core.thread.ThreadUtil;
+import com.pc.common.util.ImageUtil;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 public class AudioPlayer {
 
@@ -31,10 +30,10 @@ public class AudioPlayer {
 
                 while (true){
                     if(k%3 == 0){
-                        URL url = ImageUtils.class.getClassLoader().getResource("MP3/15279.wav"  );
+                        URL url = ImageUtil.class.getClassLoader().getResource("MP3/15279.wav"  );
                         audioInputStream = AudioSystem.getAudioInputStream(new File(URLDecoder.decode(url.getPath())));
                     }else{
-                        URL url = ImageUtils.class.getClassLoader().getResource("MP3/3550.wav"  );
+                        URL url = ImageUtil.class.getClassLoader().getResource("MP3/3550.wav"  );
                         audioInputStream = AudioSystem.getAudioInputStream(new File(URLDecoder.decode(url.getPath())));
                     }
 
@@ -62,12 +61,12 @@ public class AudioPlayer {
 
 
     public static void playerStartGame(){
-        URL url = ImageUtils.class.getClassLoader().getResource("MP3/3550.wav"  );
+        URL url = ImageUtil.class.getClassLoader().getResource("MP3/3550.wav"  );
         player(URLDecoder.decode(url.getPath()));
 
     }
     public static void playerAttack(){
-        URL url = ImageUtils.class.getClassLoader().getResource("MP3/gj.wav"  );
+        URL url = ImageUtil.class.getClassLoader().getResource("MP3/gj.wav"  );
         try {
             // 从文件中加载音频流
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(URLDecoder.decode(url.getPath())));
@@ -79,7 +78,7 @@ public class AudioPlayer {
                 // 开始播放音频
                 clip.start();
                 // 等待音频播放完毕
-                ThreadSleepUtils.sleep(clip.getMicrosecondLength() / 1000);
+                ThreadUtil.sleep(clip.getMicrosecondLength() / 1000);
             });
             // 关闭音频剪辑和音频流
 //                clip.close();
@@ -95,7 +94,7 @@ public class AudioPlayer {
 
         try {
 
-            URL url = ImageUtils.class.getClassLoader().getResource("MP3/3550.wav"  );
+            URL url = ImageUtil.class.getClassLoader().getResource("MP3/3550.wav"  );
             // 从文件中加载音频流
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(URLDecoder.decode(url.getPath())));
 

@@ -1,4 +1,6 @@
-package com.pc.common;
+package com.pc.common.util;
+
+import com.pc.common.constant.Constant;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,25 +12,28 @@ import java.net.URL;
  * @author: pangcheng
  * @time: 2023/6/6 19:13
  */
-public class ImageUtils {
+public class ImageUtil {
 
     public static BufferedImage getImageFromResources(String imgName) {
-        URL url = ImageUtils.class.getClassLoader().getResource("kongl" + imgName);
+        URL url = ImageUtil.class.getClassLoader().getResource("kongl" + imgName);
         try {
             return ImageIO.read(url);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     public static BufferedImage getImageFromResourcesLb(String imgName) {
-        URL url = ImageUtils.class.getClassLoader().getResource("image" + imgName);
+        URL url = ImageUtil.class.getClassLoader().getResource("image" + imgName);
         try {
             return ImageIO.read(url);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     public static void main(String[] args) {
-        ImageUtils.getImageFromResources(Constant.gameImagePath);
+        ImageUtil.getImageFromResources(Constant.gameImagePath);
     }
+
 }

@@ -1,7 +1,7 @@
 package com.pc.client.model;
 
-import com.pc.common.Constant;
-import com.pc.common.ImageUtils;
+import com.pc.common.constant.Constant;
+import com.pc.common.util.ImageUtil;
 import com.pc.common.msg.SkillMsgData;
 import lombok.Data;
 
@@ -56,9 +56,9 @@ public class SkillModel  extends BasicModel{
 
     public SkillModel(){
         try {
-            this.image = ImageUtils.getImageFromResources(Constant.jnRightPath);
-            this.leftImage = ImageUtils.getImageFromResources(Constant.jnLeftPath);
-            this.rightImage = ImageUtils.getImageFromResources(Constant.jnRightPath);
+            this.image = ImageUtil.getImageFromResources(Constant.jnRightPath);
+            this.leftImage = ImageUtil.getImageFromResources(Constant.jnLeftPath);
+            this.rightImage = ImageUtil.getImageFromResources(Constant.jnRightPath);
         } catch (Exception e) {
 
             System.out.println("加载技能图片失败");

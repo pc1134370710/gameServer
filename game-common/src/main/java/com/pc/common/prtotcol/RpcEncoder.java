@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.pc.common;
+package com.pc.common.prtotcol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,7 +31,7 @@ public class RpcEncoder extends MessageToByteEncoder<RpcProtocol> {
 
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, RpcProtocol msg, ByteBuf out) throws Exception {
-      //todo 顺序不能乱 不然解码会不生效
+      // TODO 顺序不能乱 不然解码会不生效
         out.writeInt(msg.getLen());
         out.writeBytes(msg.getContent());
 

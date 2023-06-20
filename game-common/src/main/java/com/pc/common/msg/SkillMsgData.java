@@ -1,6 +1,6 @@
 package com.pc.common.msg;
 
-import com.pc.common.Constant;
+import com.pc.common.constant.Constant;
 import lombok.Data;
 
 import java.awt.*;

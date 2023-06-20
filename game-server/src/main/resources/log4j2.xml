@@ -7,15 +7,15 @@
     <Properties>
         <!-- ==============================================公共配置============================================== -->
         <!-- 设置日志文件的目录名称 -->
-        <property name="logFileName">gameServer</property>
+        <property name="logging.file.name">game-server</property>
 
         <!-- 日志默认存放的位置,可以设置为项目根路径下,也可指定绝对路径 -->
         <!-- 存放路径一:通用路径,window平台 -->
-         <property name="basePath">/home/logs/server/</property>
+        <property name="BASE_PATH">./logs</property>
         <!-- 存放路径二:web工程专用,java项目没有这个变量,需要删掉,否则会报异常,这里把日志放在web项目的根目录下 -->
         <!-- <property name="basePath">${web:rootDir}/${logFileName}</property> -->
         <!-- 存放路径三:web工程专用,java项目没有这个变量,需要删掉,否则会报异常,这里把日志放在tocmat的logs目录下 -->
-<!--        <property name="basePath">F:\MONITOR_LOG</property>-->
+        <!--        <property name="basePath">F:\MONITOR_LOG</property>-->
 
         <!-- 控制台默认输出格式,"%-5level":日志级别,"%l":输出完整的错误位置,是小写的L,因为有行号显示,所以影响日志输出的性能 -->
         <property name="console_log_pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %l - %m%n</property>
@@ -30,9 +30,9 @@
         <property name="output_log_level">DEBUG</property>
 
         <!-- 日志默认存放路径(所有级别日志) -->
-        <property name="rolling_fileName">${basePath}/${logFileName}.log</property>
+        <property name="rolling_fileName">${BASE_PATH}/${logging.file.name}.log</property>
         <!-- 日志默认压缩路径,将超过指定文件大小的日志,自动存入按"年月"建立的文件夹下面并进行压缩,作为存档 -->
-        <property name="rolling_filePattern">${basePath}/${logFileName}-%d{yyyy-MM-dd}-%i.log</property>
+        <property name="rolling_filePattern">${BASE_PATH}/${logging.file.name}-%d{yyyy-MM-dd}-%i.log</property>
         <!-- 日志默认同类型日志,同一文件夹下可以存放的数量,不设置此属性则默认为7个,filePattern最后要带%i才会生效 -->
         <property name="rolling_max">500</property>
         <!-- 日志默认同类型日志,多久生成一个新的日志文件,这个配置需要和filePattern结合使用;
@@ -42,7 +42,6 @@
         <!-- 日志默认同类型日志,是否对封存时间进行调制,若为true,则封存时间将以0点为边界进行调整,
                              如:现在是早上3am,interval是4,那么第一次滚动是在4am,接着是8am,12am...而不是7am -->
         <property name="rolling_timeModulate">true</property>
-
     </Properties>
 
     <!--定义appender -->
@@ -55,13 +54,12 @@
                 <SizeBasedTriggeringPolicy size="${every_file_size}"/>
             </Policies>
             <!-- 设置同类型日志,同一文件夹下可以存放的数量,如果不设置此属性则默认存放7个文件 -->
-            <DefaultRolloverStrategy max="${rolling_max}" />
+            <DefaultRolloverStrategy max="${rolling_max}"/>
         </RollingFile>
         <!-- 控制台打印日志 -->
         <Console name="consolePrint" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-
     </appenders>
 
     <!--定义logger,只有定义了logger并引0入的appender,appender才会生效-->
@@ -69,9 +67,8 @@
         <!--建立一个默认的root的logger-->
         <root level="${output_log_level}">
             <appender-ref ref="RollingFile"/>
-            <appender-ref ref="consolePrint" />
+            <appender-ref ref="consolePrint"/>
         </root>
-
     </loggers>
 
 </configuration>

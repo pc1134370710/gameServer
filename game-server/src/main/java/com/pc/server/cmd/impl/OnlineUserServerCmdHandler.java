@@ -1,11 +1,11 @@
 package com.pc.server.cmd.impl;
 
-import com.pc.common.RpcProtocol;
-import com.pc.common.ServerCmd;
+import com.pc.common.netty.model.UserModel;
+import com.pc.common.prtotcol.RpcProtocol;
+import com.pc.common.prtotcol.ServerCmd;
 import com.pc.common.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
-import com.pc.server.RpcNettyServer;
-import io.netty.channel.Channel;
+import com.pc.common.netty.cache.UserCache;
 
 /**
  * @description: 获取在线人数
@@ -15,11 +15,12 @@ import io.netty.channel.Channel;
 public class OnlineUserServerCmdHandler implements ServerCmdHandler {
 
     @Override
-    public void doHandle(Msg msg, Channel channel) {
+    public void doHandle(Msg msg, UserModel userModel) {
         Msg m = new Msg();
         m.setCmd(ServerCmd.GET_ONLINE_USER_SIZE.getValue());
-        m.setData(RpcNettyServer.channelMap.size()+"");
+        m.setData(UserCache.countRepositorySize().toString());
         // 由于是房间管道， 所以就直接返回了
-        channel.writeAndFlush(RpcProtocol.getRpcProtocol(m));
+        userModel.writeAndFlush(RpcProtocol.getRpcProtocol(m));
     }
+
 }

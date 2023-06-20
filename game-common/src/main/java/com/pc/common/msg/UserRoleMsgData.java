@@ -1,13 +1,11 @@
 package com.pc.common.msg;
 
-import com.pc.common.Constant;
+import com.pc.common.constant.Constant;
 import lombok.Data;
 
 import java.awt.*;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @description: 用户角色数据包

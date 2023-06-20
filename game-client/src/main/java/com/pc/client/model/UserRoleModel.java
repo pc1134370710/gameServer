@@ -2,8 +2,8 @@ package com.pc.client.model;
 
 import com.pc.client.utils.AudioPlayer;
 import com.pc.client.cache.LocalGameInfo;
-import com.pc.common.Constant;
-import com.pc.common.ImageUtils;
+import com.pc.common.constant.Constant;
+import com.pc.common.util.ImageUtil;
 import com.pc.common.msg.UserRoleMsgData;
 import lombok.Data;
 
@@ -108,20 +108,20 @@ public class UserRoleModel  extends BasicModel {
             this.attackRightImage = new CopyOnWriteArrayList<>();
 
             for(String path : Constant.userLeftList){
-                BufferedImage monsterAction  = ImageUtils.getImageFromResourcesLb(path);
+                BufferedImage monsterAction  = ImageUtil.getImageFromResourcesLb(path);
                 this.leftImage.add(monsterAction);
             }
 
             for(String path : Constant.userRichtList){
-                BufferedImage monsterAction  = ImageUtils.getImageFromResourcesLb(path);
+                BufferedImage monsterAction  = ImageUtil.getImageFromResourcesLb(path);
                 this.rightImage.add(monsterAction);
             }
-            this.slideLeft = ImageUtils.getImageFromResourcesLb(Constant.slideLeft);
-            this.slideRight = ImageUtils.getImageFromResourcesLb(Constant.slideRight);
+            this.slideLeft = ImageUtil.getImageFromResourcesLb(Constant.slideLeft);
+            this.slideRight = ImageUtil.getImageFromResourcesLb(Constant.slideRight);
 
             // 攻击资源放在最后一个
-            this.leftImage.add(ImageUtils.getImageFromResourcesLb(Constant.userAttackImageLeft));
-            this.rightImage.add(ImageUtils.getImageFromResourcesLb(Constant.userAttackImageRight));
+            this.leftImage.add(ImageUtil.getImageFromResourcesLb(Constant.userAttackImageLeft));
+            this.rightImage.add(ImageUtil.getImageFromResourcesLb(Constant.userAttackImageRight));
             this.list.addAll(this.rightImage);
             this.image = rightImage.get(0);
             this.userX = Constant.withe/2;
@@ -136,7 +136,7 @@ public class UserRoleModel  extends BasicModel {
 
     @Override
     public void paintOneself() {
-        // todo 已经死亡了， 不在移动， 图片变换为死亡图片
+        // TODO 已经死亡了， 不在移动， 图片变换为死亡图片
         if(isOver.get()){
             this.gameGraphics2D.setColor(Color.red);
             this.gameGraphics2D.drawString("玩家:"+this.userId+" gg了",this.userX  ,this.userY);
