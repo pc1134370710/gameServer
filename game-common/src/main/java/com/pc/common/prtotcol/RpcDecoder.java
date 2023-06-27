@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.pc.common;
+package com.pc.common.prtotcol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,7 +33,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf in, List<Object> out) throws Exception {
         // 返回表示 ByteBuf 当前可读取的字节数    // 一个整形4个字节
-//        System.out.println("可读长度：" +in.readableBytes() );
+        // System.out.println("可读长度：" +in.readableBytes() );
 
         if (in.readableBytes() >= 4) {
             if (length == 0) {

@@ -1,12 +1,12 @@
 package com.pc.client;
 
 import com.alibaba.fastjson.JSON;
-import com.pc.client.gui.GamePanel;
-import com.pc.client.gui.RoomPanel;
-import com.pc.common.PropertiesUtils;
-import com.pc.common.RpcDecoder;
-import com.pc.common.RpcEncoder;
-import com.pc.common.RpcProtocol;
+import com.pc.client.handler.RpcClientSyncHandler;
+import com.pc.common.constant.Constant;
+import com.pc.common.util.PropertiesUtil;
+import com.pc.common.prtotcol.RpcDecoder;
+import com.pc.common.prtotcol.RpcEncoder;
+import com.pc.common.prtotcol.RpcProtocol;
 import com.pc.common.msg.Msg;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -22,120 +22,113 @@ import org.apache.logging.log4j.Logger;
  */
 public class Client {
 
-    private Logger log = LogManager.getLogger(Client.class);
+    private static final Logger log = LogManager.getLogger(Client.class);
 
     /**
      * 游戏通信连接管道
      */
-    private  Channel gameChannel;
+    private Channel gameChannel;
 
     /**
      * 房间连接管道
      */
-    private  Channel roomChannel;
+    private Channel roomChannel;
 
-    private  Channel chatChannel;
-    private  Channel taskChannel;
+    private Channel chatChannel;
+    private Channel taskChannel;
 
-    private EventLoopGroup clientGroup = new NioEventLoopGroup();
+    private final EventLoopGroup clientGroup = new NioEventLoopGroup();
 
     public Client() {
-
         try {
-            roomChannel = createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
+            roomChannel = createChannel(PropertiesUtil.get(Constant.HOST), PropertiesUtil.getInteger(Constant.PORT));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
-    public void  initGameChannel(){
-        try {
-            gameChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
-            chatChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
-            taskChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+    public void initGameChannel() {
+        initChannel();
     }
 
     /**
      * 刷新游戏连接
      */
-    public  void refreshGameChannel(){
+    public void refreshGameChannel() {
         System.out.println("重置连接");
-        if(gameChannel!=null){
+        if (gameChannel != null) {
             gameChannel.close();
             chatChannel.close();
             taskChannel.close();
-          }
-        try {
-            gameChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
-            chatChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
-            taskChannel =  createChannel(PropertiesUtils.get("serverUrl"),PropertiesUtils.getInteger("serverPort"));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
+        initChannel();
     }
-    public  void sendMsg(Msg msg){
+
+    public void sendMsg(Msg msg) {
         RpcProtocol rpcProtocol = new RpcProtocol();
         String json = JSON.toJSONString(msg);
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         gameChannel.writeAndFlush(rpcProtocol);
-        log.info("cmd = sendMsg | msg ={}",msg );
+        log.info("cmd = sendMsg | msg ={}", msg);
     }
 
     /**
      * 发送聊天消息
+     *
      * @param msg
      */
-    public  void sendChatMsg(Msg msg){
+    public void sendChatMsg(Msg msg) {
         RpcProtocol rpcProtocol = new RpcProtocol();
         String json = JSON.toJSONString(msg);
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         chatChannel.writeAndFlush(rpcProtocol);
-        log.info("cmd = sendChatMsg | msg ={}",msg );
+        log.info("cmd = sendChatMsg | msg ={}", msg);
     }
 
     /**
      * 注册 服务器定时任务刷新 消息
+     *
      * @param msg
      */
-    public  void registerTask(Msg msg){
+    public void registerTask(Msg msg) {
         RpcProtocol rpcProtocol = new RpcProtocol();
         String json = JSON.toJSONString(msg);
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         chatChannel.writeAndFlush(rpcProtocol);
-        log.info("cmd = sendMsg | msg ={}",msg );
+        log.info("cmd = sendMsg | msg ={}", msg);
     }
 
     /**
      * 发送房间
+     *
      * @param msg
      */
-    public  void sendRoomMsg(Msg msg){
+    public void sendRoomMsg(Msg msg) {
         RpcProtocol rpcProtocol = new RpcProtocol();
         String json = JSON.toJSONString(msg);
         rpcProtocol.setLen(json.getBytes().length);
         rpcProtocol.setContent(json.getBytes());
         roomChannel.writeAndFlush(rpcProtocol);
-        log.info("cmd = sendRoomMsg | msg ={}",msg );
+        log.info("cmd = sendRoomMsg | msg ={}", msg);
     }
 
 
     /**
      * 返回新的Channel
+     *
      * @param address ip地址
-     * @param port 端口
+     * @param port    端口
      * @return channel
      * @throws InterruptedException exception
      */
     private Channel createChannel(String address, int port) throws InterruptedException {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(clientGroup)
-                .option(ChannelOption.SO_SNDBUF,512)//设置发送缓冲区
-                .option(ChannelOption.SO_RCVBUF,1024*9)//设置发送缓冲区
+                .option(ChannelOption.SO_SNDBUF, 512)//设置发送缓冲区
+                .option(ChannelOption.SO_RCVBUF, 1024 * 9)//设置发送缓冲区
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.TCP_NODELAY, false)
                 .option(ChannelOption.AUTO_CLOSE, true)
@@ -155,8 +148,11 @@ public class Client {
 
                          */
                         ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast("Encoder", new RpcEncoder());
-                        pipeline.addLast("Decoder", new RpcDecoder());
+
+                        // TODO SSL/TLS 安全通道双向认证
+
+                        pipeline.addLast("encoder", new RpcEncoder());
+                        pipeline.addLast("decoder", new RpcDecoder());
                         pipeline.addLast("clientHandler", new RpcClientSyncHandler());
 
                     }
@@ -164,5 +160,14 @@ public class Client {
         return bootstrap.connect(address, port).sync().channel();
     }
 
+    private void initChannel() {
+        try {
+            gameChannel = createChannel(PropertiesUtil.get(Constant.HOST), PropertiesUtil.getInteger(Constant.PORT));
+            chatChannel = createChannel(PropertiesUtil.get(Constant.HOST), PropertiesUtil.getInteger(Constant.PORT));
+            taskChannel = createChannel(PropertiesUtil.get(Constant.HOST), PropertiesUtil.getInteger(Constant.PORT));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

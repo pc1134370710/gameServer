@@ -1,20 +1,21 @@
 package com.pc.client.cmd;
+
 import com.pc.client.cmd.impl.*;
-import com.pc.common.ServerCmd;
+import com.pc.common.prtotcol.ServerCmd;
 import com.pc.common.cmd.CmdHandler;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @description:  命令字处理器工厂
+ * @description: 命令字处理器工厂
  * @author: pangcheng
  * @time: 2023/6/12 13:41
  */
 public class ClientCmdHandleFactory {
 
 
-    private static Map<Integer, CmdHandler> cmdHandleMap = new HashMap<>();
+    private static final Map<Integer, CmdHandler> cmdHandleMap = new HashMap<>();
 
 
     static {
@@ -31,17 +32,19 @@ public class ClientCmdHandleFactory {
         cmdHandleMap.put(ServerCmd.EXIT_GAME.getValue(), new ExitGameCmdHandler());
         cmdHandleMap.put(ServerCmd.INIT_NPC.getValue(), new InitNpcUserCmdHandler());
         cmdHandleMap.put(ServerCmd.CHAT_MSG.getValue(), new ChatMsgCmdHandler());
+    }
+
+    private ClientCmdHandleFactory() {
 
     }
-    private ClientCmdHandleFactory(){
 
-    }
     /**
      * 获取命令字处理器
+     *
      * @param cmd
      * @return
      */
-    public static CmdHandler getCmdHandle(Integer cmd){
+    public static CmdHandler getCmdHandle(Integer cmd) {
         return cmdHandleMap.get(cmd);
     }
 

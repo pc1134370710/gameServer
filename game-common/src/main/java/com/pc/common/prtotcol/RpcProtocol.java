@@ -15,25 +15,24 @@
  * limitations under the License.
  */
 
-package com.pc.common;
+package com.pc.common.prtotcol;
 
 
 import com.alibaba.fastjson.JSON;
 import com.pc.common.msg.Msg;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Netty 通信的数据格式
+ * <p>
+ * 发送的数据在管道里是无缝流动的，在数据量很大时，为了分割数据，采用以下几种方法
+ * 定长方法
+ * 固定分隔符
+ * 将消息分成消息体和消息头，在消息头中用一个数组说明消息体的长度
  */
 public class RpcProtocol {
 
-    /**
-     * 发送的数据在管道里是无缝流动的，在数据量很大时，为了分割数据，采用以下几种方法
-     * 定长方法
-     * 固定分隔符
-     * 将消息分成消息体和消息头，在消息头中用一个数组说明消息体的长度
-     */
     /**
      * 数据大小
      */
@@ -68,17 +67,15 @@ public class RpcProtocol {
     public void setContent(byte[] content) {
         this.content = content;
     }
-    public static RpcProtocol getRpcProtocol(Msg msg){
+
+    public static RpcProtocol getRpcProtocol(Msg msg) {
         String json = JSON.toJSONString(msg);
         RpcProtocol rpcProtocol = new RpcProtocol();
         rpcProtocol.setLen(json.getBytes().length);
-        try {
-            rpcProtocol.setContent(json.getBytes("utf-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        rpcProtocol.setContent(json.getBytes(StandardCharsets.UTF_8));
         return rpcProtocol;
     }
+
     @Override
     public String toString() {
         return "RpcProtocol{" +
@@ -86,4 +83,5 @@ public class RpcProtocol {
                 ", content=" + new String(content) +
                 '}';
     }
+
 }

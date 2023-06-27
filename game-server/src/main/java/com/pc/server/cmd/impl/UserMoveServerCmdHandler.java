@@ -4,34 +4,34 @@ import com.alibaba.fastjson.JSON;
 import com.pc.common.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
 import com.pc.common.msg.UserRoleMsgData;
-import com.pc.server.RoomServer;
-import com.pc.server.RpcNettyServer;
-import com.pc.server.UserModel;
-import io.netty.channel.Channel;
+import com.pc.common.netty.cache.RoomCache;
+import com.pc.common.netty.model.RoomServer;
+import com.pc.common.netty.model.UserModel;
 
 /**
- * @description:  服务器处理 用户移动
+ * @description: 服务器处理 用户移动
  * @author: pangcheng
  * @time: 2023/6/12 16:19
  */
 public class UserMoveServerCmdHandler implements ServerCmdHandler {
 
-    // 收到用户移动 todo 待修改成 服务器端移动用户
+    // 收到用户移动 TODO 待修改成 服务器端移动用户
 
     /**
-     *  只接受， 坐标， 方向信息
-     * @param msg 消息对象
-     * @param channel
+     * 只接受， 坐标， 方向信息
+     *
+     * @param msg       消息对象
+     * @param userModel
      */
     @Override
-    public void doHandle(Msg msg, Channel channel) {
+    public void doHandle(Msg msg, UserModel userModel) {
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
-        RoomServer roomServer = RpcNettyServer.roomServerMap.get(msg.getRoomId());
-        UserModel userModel = roomServer.getUser().get(userRoleMoveMsgData.getUserId());
+        RoomServer roomServer = RoomCache.get(msg.getRoomId());
+
         // 解析客户端的 操作数据包
         userModel.analysisMoveMsg(userRoleMoveMsgData);
         // 通知其他客户端移动
         roomServer.putMsg(msg);
-        return;
     }
+
 }
