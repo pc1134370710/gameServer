@@ -18,11 +18,11 @@
 package com.pc.server.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.pc.common.netty.model.UserModel;
+import com.pc.server.model.UserModel;
 import com.pc.common.prtotcol.RpcProtocol;
-import com.pc.common.cmd.ServerCmdHandler;
+import com.pc.server.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
-import com.pc.common.netty.cache.UserCache;
+import com.pc.server.cache.UserCache;
 import com.pc.server.cmd.ServerCmdHandleFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

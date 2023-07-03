@@ -18,12 +18,12 @@
 package com.pc.server;
 
 import com.pc.common.constant.Constant;
-import com.pc.common.netty.cache.RoomCache;
+import com.pc.server.cache.RoomCache;
 import com.pc.common.netty.server.TCPServer;
 import com.pc.common.prtotcol.RpcDecoder;
 import com.pc.common.prtotcol.RpcEncoder;
 import com.pc.common.util.PropertiesUtil;
-import com.pc.common.netty.model.RoomServer;
+import com.pc.server.model.RoomServer;
 import com.pc.server.handler.RpcServerHandler;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;

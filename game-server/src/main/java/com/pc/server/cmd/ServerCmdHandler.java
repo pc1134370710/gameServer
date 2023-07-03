@@ -1,7 +1,7 @@
-package com.pc.common.cmd;
+package com.pc.server.cmd;
 
 import com.pc.common.msg.Msg;
-import com.pc.common.netty.model.UserModel;
+import com.pc.server.model.UserModel;
 
 /**
  * @description: 相关命令字处理器

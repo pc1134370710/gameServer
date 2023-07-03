@@ -1,4 +1,4 @@
-package com.pc.common.netty.model;
+package com.pc.server.model;
 
 import cn.hutool.core.thread.ThreadUtil;
 import com.alibaba.fastjson.JSON;

@@ -1,8 +1,8 @@
-package com.pc.common.netty.cache;
+package com.pc.server.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.pc.common.netty.model.RoomServer;
+import com.pc.server.model.RoomServer;
 
 /**
  * @author Kevin

@@ -1,11 +1,11 @@
 package com.pc.server.cmd.impl;
 
-import com.pc.common.netty.model.UserModel;
+import com.pc.server.model.UserModel;
 import com.pc.common.prtotcol.RpcProtocol;
 import com.pc.common.prtotcol.ServerCmd;
-import com.pc.common.cmd.ServerCmdHandler;
+import com.pc.server.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
-import com.pc.common.netty.cache.UserCache;
+import com.pc.server.cache.UserCache;
 
 /**
  * @description: 获取在线人数
