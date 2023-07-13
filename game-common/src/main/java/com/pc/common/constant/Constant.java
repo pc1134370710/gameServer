@@ -16,11 +16,7 @@ public class Constant {
     /**
      * 游戏背景
      */
-    public static final String gameImagePath = "/背景.png";
-    /**
-     * 小怪 图片
-     */
-    public static final String monsterImagePath = "/鸟2.png";
+    public static final String gameImagePath = "/bg3.jpg";
 
     public static final String userAttackImageLeft = "/a1-L2.png";
     public static final String userAttackImageRight = "/a1-R2.png";
@@ -91,7 +87,7 @@ public class Constant {
      * 游戏窗口大小
      */
     public static final int withe = 958;
-    public static final int height = 742;
+    public static final int height = 600;
 
 
     public static Long pcAttackTimeGap = 2000L;

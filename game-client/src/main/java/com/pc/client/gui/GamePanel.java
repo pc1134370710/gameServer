@@ -3,6 +3,7 @@ package com.pc.client.gui;
 
 import com.alibaba.fastjson.JSON;
 import com.pc.client.cache.LocalGameInfo;
+import com.pc.client.model.GameBackdrop;
 import com.pc.client.model.SkillModel;
 import com.pc.client.model.UserRoleModel;
 import com.pc.common.constant.Constant;
@@ -10,6 +11,7 @@ import com.pc.common.prtotcol.ServerCmd;
 import com.pc.common.msg.Msg;
 import com.pc.common.msg.SkillMsgData;
 import com.pc.common.msg.UserRoleMsgData;
+import com.pc.common.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,8 +40,10 @@ public class GamePanel extends JPanel implements KeyListener {
      *  绘图笔
      */
     private Graphics2D graphics2D ;
-
-
+    /**
+     * 游戏背景
+     */
+    private GameBackdrop gameBackdrop;
     /**
      * 是否已经初始化完毕
      */
@@ -68,14 +72,11 @@ public class GamePanel extends JPanel implements KeyListener {
      */
     @Override
     public void paint(Graphics g) {
-//        System.out.println("开始绘制游戏面板");
         // 初始化游戏
         initPanel();
 
-        this.graphics2D.setColor(Color.lightGray);
-        this.graphics2D.fillRect(0,0,Constant.withe,Constant.height);
 
-
+        gameBackdrop.paintOneself();
         // 绘制用户
         for(UserRoleModel userRoleModel : LocalGameInfo.userRoleModelMap.values()){
             userRoleModel.paintOneself();
@@ -112,12 +113,9 @@ public class GamePanel extends JPanel implements KeyListener {
                 this.bufferedImage   = new BufferedImage(Constant.withe, Constant.height, BufferedImage.TYPE_3BYTE_BGR);
                 // 返回:一个Graphics2D，用于绘制到此图像中
                 this.graphics2D = bufferedImage.createGraphics();
-                this.graphics2D.setColor(Color.GRAY);
-                this.graphics2D.drawRect(0,0,Constant.withe,Constant.height);
-
                 // 开始游戏音效
 //                AudioPlayer.playerStartGame();
-
+                gameBackdrop = new GameBackdrop(this.graphics2D);
 
                 init.compareAndSet(false,true);
 
@@ -154,7 +152,6 @@ public class GamePanel extends JPanel implements KeyListener {
     boolean keyAPressed = false;
     boolean keySPressed = false;
     boolean keyDPressed = false;
-
     // 防止一直 按住攻击
     boolean keyJPressed = false;
 

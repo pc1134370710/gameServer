@@ -109,7 +109,7 @@ public class MainClient {
                         while (true) {
                             // 刷新游戏界面
                             gamePanel.repaint();
-                            ThreadUtil.sleep(5);
+                            ThreadUtil.sleep(2);
                         }
                     }).start();
 

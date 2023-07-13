@@ -1,6 +1,7 @@
 package com.pc.client.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.pc.client.cache.LocalGameInfo;
 import com.pc.common.cmd.CmdHandler;
 import com.pc.client.cmd.ClientCmdHandleFactory;
 import com.pc.common.prtotcol.RpcProtocol;
