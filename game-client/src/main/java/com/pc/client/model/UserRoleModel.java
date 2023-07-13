@@ -2,6 +2,7 @@ package com.pc.client.model;
 
 import com.pc.client.utils.AudioPlayer;
 import com.pc.client.cache.LocalGameInfo;
+import com.pc.client.utils.ThreadPoolUtils;
 import com.pc.common.constant.Constant;
 import com.pc.common.util.ImageUtil;
 import com.pc.common.msg.UserRoleMsgData;
@@ -25,8 +26,6 @@ public class UserRoleModel  extends BasicModel {
 
 
     private BufferedImage image;
-    private BufferedImage slideLeft;
-    private BufferedImage slideRight;
 
     private List<BufferedImage> list;
     /**
@@ -116,12 +115,16 @@ public class UserRoleModel  extends BasicModel {
                 BufferedImage monsterAction  = ImageUtil.getImageFromResourcesLb(path);
                 this.rightImage.add(monsterAction);
             }
-            this.slideLeft = ImageUtil.getImageFromResourcesLb(Constant.slideLeft);
-            this.slideRight = ImageUtil.getImageFromResourcesLb(Constant.slideRight);
+            for(String path : Constant.userAttackRightList){
+                BufferedImage monsterAction  = ImageUtil.getImageFromResourcesLb(path);
+                this.attackRightImage.add(monsterAction);
+            }
+            for(String path : Constant.userAttackLeftList){
+                BufferedImage monsterAction  = ImageUtil.getImageFromResourcesLb(path);
+                this.getAttackLeftImage().add(monsterAction);
+            }
 
-            // 攻击资源放在最后一个
-            this.leftImage.add(ImageUtil.getImageFromResourcesLb(Constant.userAttackImageLeft));
-            this.rightImage.add(ImageUtil.getImageFromResourcesLb(Constant.userAttackImageRight));
+
             this.list.addAll(this.rightImage);
             this.image = rightImage.get(0);
             this.userX = Constant.withe/2;
@@ -178,20 +181,6 @@ public class UserRoleModel  extends BasicModel {
 
     }
 
-    public Rectangle getRectangle() {
-        if(attack!=null && attack.get()){
-            if(direction !=null && direction<0){
-                // 往左边
-                return new Rectangle(userX-100,userY-8,200,130);
-            }else{
-                // 往右边
-                return new Rectangle(userX-35,userY-8,200,130);
-            }
-        }else{
-            // 如果不是攻击形态
-            return new Rectangle(userX,userY-8,45,130);
-        }
-    }
 
 
     /**
@@ -214,7 +203,7 @@ public class UserRoleModel  extends BasicModel {
         }
         // 减少图片刷新评率
         if(refresh.get()%5==0){
-            int len = list.size()-1;
+            int len = list.size();
             int i = imageRand.incrementAndGet();
             imageRand.compareAndSet(len,0);
             this.image = list.get(i%len);
@@ -228,8 +217,28 @@ public class UserRoleModel  extends BasicModel {
     public void analysisAttackMsg(UserRoleMsgData userRoleMoveMsgData){
         this.attack.set(userRoleMoveMsgData.getAttack());
         if(this.attack.get()){
-            // 如果攻击状态， 直接将图片改成最后一个
-            this.image = list.get(list.size()-1);
+            ThreadPoolUtils.threadPoolExecutor.execute(()->{
+                // 播放动画
+                BufferedImage lastImage = image;
+                List<BufferedImage> temp = attackLeftImage;
+                if(direction>0){
+                    temp = attackRightImage;
+                }
+                for(BufferedImage bufferedImage : temp){
+                    this.attack.set(true);
+                    this.image = bufferedImage;
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                    }
+                    LocalGameInfo.gamePanel.repaint();
+                }
+                this.attack.set(false);
+                // 攻击播放玩后， 恢复最后一个
+                this.image = lastImage;
+                LocalGameInfo.gamePanel.repaint();
+
+            });
             // 播放攻击生效
             AudioPlayer.playerAttack();
         }else {

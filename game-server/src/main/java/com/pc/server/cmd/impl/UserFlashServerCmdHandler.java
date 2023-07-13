@@ -8,6 +8,7 @@ import com.pc.common.msg.Msg;
 import com.pc.common.msg.UserRoleMsgData;
 import com.pc.server.model.RoomServer;
 import com.pc.server.model.UserModel;
+import io.netty.channel.Channel;
 
 /**
  * @description: 服务器处理用户 闪现消息
@@ -20,11 +21,12 @@ public class UserFlashServerCmdHandler implements ServerCmdHandler {
      * 只接受 闪现消息
      *
      * @param msg       消息对象
-     * @param userModel 当前用户
+     * @param channel
      */
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg , Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
+        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
         userModel.analysisSlideMsg(userRoleMoveMsgData);
 

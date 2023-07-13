@@ -8,6 +8,7 @@ import com.pc.common.msg.Msg;
 import com.pc.common.msg.SkillMsgData;
 import com.pc.server.model.RoomServer;
 import com.pc.server.model.UserModel;
+import io.netty.channel.Channel;
 
 /**
  * @description: 服务器 处理释放技能消息
@@ -17,9 +18,9 @@ import com.pc.server.model.UserModel;
 public class UserSkillServerCmdHandler implements ServerCmdHandler {
 
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg,  Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-
+        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
         // 存储技能
         SkillMsgData skillMsgData = JSON.parseObject(msg.getData(), SkillMsgData.class);
         // 设置技能方向坐标

@@ -7,6 +7,7 @@ import com.pc.common.msg.UserRoleMsgData;
 import com.pc.server.cache.RoomCache;
 import com.pc.server.model.RoomServer;
 import com.pc.server.model.UserModel;
+import io.netty.channel.Channel;
 
 /**
  * @description: 服务器处理 用户移动
@@ -21,13 +22,13 @@ public class UserMoveServerCmdHandler implements ServerCmdHandler {
      * 只接受， 坐标， 方向信息
      *
      * @param msg       消息对象
-     * @param userModel
+     * @param channel
      */
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg,  Channel channel) {
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-
+        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
         // 解析客户端的 操作数据包
         userModel.analysisMoveMsg(userRoleMoveMsgData);
         // 通知其他客户端移动

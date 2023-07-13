@@ -24,6 +24,7 @@ import com.pc.server.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
 import com.pc.server.cache.UserCache;
 import com.pc.server.cmd.ServerCmdHandleFactory;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.logging.log4j.LogManager;
@@ -47,10 +48,11 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        UserModel userModel = UserCache.createChannel(new UserModel()
-                .setChannelId(ctx.channel().id().asShortText())
-                .setChannel(ctx.channel()));
-        log.info("用户连接 : {}", userModel);
+        // 初始化连接 ， 来一个连接 就缓存不科学
+//        UserModel userModel = UserCache.createChannel(new UserModel()
+//                .setChannelId(ctx.channel().id().asShortText())
+//                .setChannel(ctx.channel()));
+//        log.info("用户连接 : {}", userModel);
         super.channelActive(ctx);
     }
 
@@ -79,12 +81,11 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcProtocol> {
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol rpcProtocol) throws Exception {
-        UserModel userModel = UserCache.getChannelInfo(ctx.channel().id().asShortText());
         String json = new String(rpcProtocol.getContent());
         Msg msg = JSON.parseObject(json, Msg.class);
         log.info("收到消息 {} ", msg);
         ServerCmdHandler cmdHandle = ServerCmdHandleFactory.getCmdHandle(msg.getCmd());
-        cmdHandle.doHandle(msg, userModel);
+        cmdHandle.doHandle(msg, ctx.channel());
     }
 
     @Override

@@ -58,14 +58,7 @@ public class RoomServer {
      * 房间内的用户， key : userId
      */
     private Cache<String, UserModel> user = Caffeine.newBuilder().build();
-    /**
-     * 存放房间内聊天通道 ，key : userId
-     */
-    private Cache<String, Channel> chatChannel = Caffeine.newBuilder().build();
-    /**
-     * 存放房间的 定时任务的通道消息 ， 防止所有消息一条通道通信，消息阻塞严重
-     */
-    private Cache<String, Channel> taskChannel = Caffeine.newBuilder().build();
+
     /**
      * 房间内技能情况
      */
@@ -179,7 +172,7 @@ public class RoomServer {
                 monsterX -= Constant.NPCSpeed;
                 pcUser.setDirection(-1);
             }
-            // TODO   Constant.NPC Speed  大于一的话， 会跟 用户坐标对不上，导致一直上下移动 BUG，所以这个绝对值比较为了解决这一个问题
+            //   Constant.NPC Speed  大于一的话， 会跟 用户坐标对不上，导致一直上下移动 BUG，所以这个绝对值比较为了解决这一个问题
             if (Math.abs(user.getUserY() - pcUser.getUserY()) <= 2) {
                 monsterY = user.getUserY();
             } else if (user.getUserY() > pcUser.getUserY()) {
@@ -608,9 +601,9 @@ public class RoomServer {
             while (true) {
                 try {
                     Msg msg = taskMsgQueue.take();
-                    Set<Map.Entry<String, Channel>> entries = taskChannel.asMap().entrySet();
-                    for (Map.Entry<String, Channel> entry : entries) {
-                        entry.getValue().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
+                    Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+                    for (Map.Entry<String, UserModel> entry : entries) {
+                        entry.getValue().getTaskChannel().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
                     }
                 } catch (InterruptedException e) {
                     log.error("cmd = taskSendMsgQueue | msg = 发送定时任务消息失败", e);
@@ -625,9 +618,9 @@ public class RoomServer {
             while (true) {
                 try {
                     Msg msg = chatMsgQueue.take();
-                    Set<Map.Entry<String, Channel>> entries = chatChannel.asMap().entrySet();
-                    for (Map.Entry<String, Channel> entry : entries) {
-                        entry.getValue().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
+                    Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+                    for (Map.Entry<String, UserModel> entry : entries) {
+                        entry.getValue().getChatChannel().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
                     }
                 } catch (InterruptedException e) {
                     log.error("cmd = chatSendMsgQueue | msg = 发送聊天消息失败", e);

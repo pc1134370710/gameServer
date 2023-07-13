@@ -7,6 +7,7 @@ import com.pc.common.msg.UserRoleMsgData;
 import com.pc.server.cache.RoomCache;
 import com.pc.server.model.UserModel;
 import com.pc.server.model.RoomServer;
+import io.netty.channel.Channel;
 
 /**
  * @description: 处理用户普通攻击
@@ -19,10 +20,10 @@ public class UserAttackServerCmdHandler implements ServerCmdHandler {
      * 普通攻击 只接受  attack 消息
      *
      * @param msg       消息对象
-     * @param userModel 当前用户
+     * @param channel 当前用户
      */
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg, Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
         // 存储技能
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);

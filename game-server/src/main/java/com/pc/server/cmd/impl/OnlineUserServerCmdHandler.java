@@ -6,6 +6,7 @@ import com.pc.common.prtotcol.ServerCmd;
 import com.pc.server.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
 import com.pc.server.cache.UserCache;
+import io.netty.channel.Channel;
 
 /**
  * @description: 获取在线人数
@@ -15,12 +16,12 @@ import com.pc.server.cache.UserCache;
 public class OnlineUserServerCmdHandler implements ServerCmdHandler {
 
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg, Channel channel) {
         Msg m = new Msg();
         m.setCmd(ServerCmd.GET_ONLINE_USER_SIZE.getValue());
         m.setData(UserCache.countRepositorySize().toString());
         // 由于是房间管道， 所以就直接返回了
-        userModel.writeAndFlush(RpcProtocol.getRpcProtocol(m));
+        channel.writeAndFlush(RpcProtocol.getRpcProtocol(m));
     }
 
 }

@@ -44,6 +44,17 @@ public class UserModel {
 
     private Channel channel;
 
+    /**
+     * 聊天管道
+     */
+    private Channel chatChannel;
+
+    /**
+     *  游戏定时任务消息管道
+     */
+    private Channel taskChannel;
+
+
     private UserRoleMsgData userRoleMsgData;
 
     public UserModel() {

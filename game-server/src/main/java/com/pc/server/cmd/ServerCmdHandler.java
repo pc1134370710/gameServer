@@ -2,6 +2,7 @@ package com.pc.server.cmd;
 
 import com.pc.common.msg.Msg;
 import com.pc.server.model.UserModel;
+import io.netty.channel.Channel;
 
 /**
  * @description: 相关命令字处理器
@@ -15,6 +16,6 @@ public interface ServerCmdHandler {
      *
      * @param msg 消息对象
      */
-    void doHandle(Msg msg, UserModel userModel);
+    void doHandle(Msg msg,  Channel channel);
 
 }

@@ -43,6 +43,7 @@ public class RpcClientSyncHandler extends SimpleChannelInboundHandler<RpcProtoco
             return;
         }
         cmdHandle.doHandle(msg);
+//        LocalGameInfo.gamePanel.repaint();
     }
 
     @Override

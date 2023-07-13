@@ -5,6 +5,7 @@ import com.pc.common.msg.Msg;
 import com.pc.server.cache.RoomCache;
 import com.pc.server.model.UserModel;
 import com.pc.server.model.RoomServer;
+import io.netty.channel.Channel;
 
 /**
  * @description: 注册 服务器定时任务 刷新管道
@@ -14,11 +15,12 @@ import com.pc.server.model.RoomServer;
 public class RegisterTaskServerCmdHandler implements ServerCmdHandler {
 
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg, Channel channel) {
         // 建立房间跟 通道的关系
         // 将用户加入到房间中
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-        roomServer.getTaskChannel().put(msg.getUserId(), userModel.getChannel());
+        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
+        userModel.setTaskChannel(channel);
     }
 
 }

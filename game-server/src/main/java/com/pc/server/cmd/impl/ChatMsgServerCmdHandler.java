@@ -5,6 +5,7 @@ import com.pc.common.msg.Msg;
 import com.pc.server.cache.RoomCache;
 import com.pc.server.model.UserModel;
 import com.pc.server.model.RoomServer;
+import io.netty.channel.Channel;
 
 /**
  * @description: 聊天消息转发
@@ -14,7 +15,7 @@ import com.pc.server.model.RoomServer;
 public class ChatMsgServerCmdHandler implements ServerCmdHandler {
 
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg, Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
         roomServer.putChatMsg(msg);
     }

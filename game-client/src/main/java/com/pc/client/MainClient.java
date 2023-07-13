@@ -37,6 +37,9 @@ public class MainClient {
         ConfigurationSource source = new ConfigurationSource(Objects.requireNonNull(MainClient.class.getResourceAsStream("/log4j2.xml")));
         Configurator.initialize((ClassLoader) null, source);
 
+        // 启动游戏客户端
+        LocalGameInfo.client = new Client();
+
         JFrame frame = getCommonJFrame("");
         frame.setResizable(false); // 固定窗口大小
         LocalGameInfo.jFrame = frame;
@@ -77,6 +80,10 @@ public class MainClient {
                     LocalGameInfo.userId = jTextField.getText();
                     frame.setVisible(false);
 
+                    // 发送检测用户名
+
+
+
                     // 创建房间面板
                     JFrame roomJFrame = getCommonJFrame("当前玩家：" + LocalGameInfo.userId);
                     roomJFrame.setResizable(false); // 固定窗口大小
@@ -116,8 +123,7 @@ public class MainClient {
                     roomPanel.setGameFrame(gameFrame);
                     LocalGameInfo.gamePanel = gamePanel;
                     LocalGameInfo.roomPanel = roomPanel;
-                    // 启动游戏客户端
-                    LocalGameInfo.client = new Client();
+
 
                     Msg msg = new Msg();
                     msg.setCmd(ServerCmd.GET_ALL_ROOM.getValue());

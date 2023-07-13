@@ -8,6 +8,7 @@ import com.pc.common.prtotcol.ServerCmd;
 import com.pc.server.cmd.ServerCmdHandler;
 import com.pc.common.msg.Msg;
 import com.pc.common.msg.RoomMsgData;
+import io.netty.channel.Channel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
 public class GetAllRoomServerCmdHandler implements ServerCmdHandler {
 
     @Override
-    public void doHandle(Msg msg, UserModel userModel) {
+    public void doHandle(Msg msg, Channel channel) {
         List<RoomMsgData> list = new ArrayList<>();
         RoomCache.all().asMap().values().forEach(a -> {
             RoomMsgData roomMsgData = new RoomMsgData();
@@ -35,7 +36,7 @@ public class GetAllRoomServerCmdHandler implements ServerCmdHandler {
         Msg m = new Msg();
         m.setCmd(ServerCmd.INIT_ROOM.getValue());
         m.setData(JSON.toJSONString(list));
-        userModel.writeAndFlush(RpcProtocol.getRpcProtocol(m));
+        channel.writeAndFlush(RpcProtocol.getRpcProtocol(m));
     }
 
 }
