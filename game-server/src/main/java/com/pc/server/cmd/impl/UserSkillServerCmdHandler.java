@@ -20,7 +20,7 @@ public class UserSkillServerCmdHandler implements ServerCmdHandler {
     @Override
     public void doHandle(Msg msg,  Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
+        UserModel userModel =  roomServer.getUser().get(msg.getUserId());
         // 存储技能
         SkillMsgData skillMsgData = JSON.parseObject(msg.getData(), SkillMsgData.class);
         // 设置技能方向坐标

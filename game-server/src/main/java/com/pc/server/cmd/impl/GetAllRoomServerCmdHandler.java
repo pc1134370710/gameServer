@@ -27,8 +27,8 @@ public class GetAllRoomServerCmdHandler implements ServerCmdHandler {
             RoomMsgData roomMsgData = new RoomMsgData();
             roomMsgData.setRoomId(a.getId());
             roomMsgData.setMaxUserSize(a.getMaxUserSize());
-            roomMsgData.setUserSize((int) a.getUser().estimatedSize());
-            roomMsgData.setFullUser((int) a.getUser().estimatedSize() == a.getMaxUserSize());
+            roomMsgData.setUserSize((int) a.getUser().size());
+            roomMsgData.setFullUser((int) a.getUser().size() == a.getMaxUserSize());
             roomMsgData.setStartGame(a.getIsOK().get());
             roomMsgData.setRoomName(a.getRoomName());
             list.add(roomMsgData);

@@ -217,6 +217,7 @@ public class UserRoleModel  extends BasicModel {
     public void analysisAttackMsg(UserRoleMsgData userRoleMoveMsgData){
         this.attack.set(userRoleMoveMsgData.getAttack());
         if(this.attack.get()){
+            // 如果是攻击状态下
             ThreadPoolUtils.threadPoolExecutor.execute(()->{
                 // 播放动画
                 BufferedImage lastImage = image;
@@ -231,8 +232,10 @@ public class UserRoleModel  extends BasicModel {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                     }
+                    // 刷新游戏面板
                     LocalGameInfo.gamePanel.repaint();
                 }
+                // 攻击结束
                 this.attack.set(false);
                 // 攻击播放玩后， 恢复最后一个
                 this.image = lastImage;

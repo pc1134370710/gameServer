@@ -28,7 +28,7 @@ public class UserMoveServerCmdHandler implements ServerCmdHandler {
     public void doHandle(Msg msg,  Channel channel) {
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
+        UserModel userModel =  roomServer.getUser().get(msg.getUserId());
         // 解析客户端的 操作数据包
         userModel.analysisMoveMsg(userRoleMoveMsgData);
         // 通知其他客户端移动

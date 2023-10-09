@@ -19,7 +19,7 @@ public class RegisterTaskServerCmdHandler implements ServerCmdHandler {
         // 建立房间跟 通道的关系
         // 将用户加入到房间中
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
+        UserModel userModel =  roomServer.getUser().get(msg.getUserId());
         userModel.setTaskChannel(channel);
     }
 

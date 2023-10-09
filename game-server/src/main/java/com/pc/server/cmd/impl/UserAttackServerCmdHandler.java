@@ -28,7 +28,7 @@ public class UserAttackServerCmdHandler implements ServerCmdHandler {
         // 存储技能
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
         // 设置该用户的 攻击状态
-        UserModel  attackUser = roomServer.getUser().getIfPresent(userRoleMoveMsgData.getUserId());
+        UserModel  attackUser = roomServer.getUser().get(userRoleMoveMsgData.getUserId());
         attackUser.analysisAttackMsg(userRoleMoveMsgData);
         if (userRoleMoveMsgData.getAttack()) {
             // 如果是触发攻击， 房间会检测攻击是否生效

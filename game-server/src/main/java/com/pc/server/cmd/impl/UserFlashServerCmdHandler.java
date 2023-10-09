@@ -26,7 +26,7 @@ public class UserFlashServerCmdHandler implements ServerCmdHandler {
     @Override
     public void doHandle(Msg msg , Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
-        UserModel userModel =  roomServer.getUser().getIfPresent(msg.getUserId());
+        UserModel userModel =  roomServer.getUser().get(msg.getUserId());
         UserRoleMsgData userRoleMoveMsgData = JSON.parseObject(msg.getData(), UserRoleMsgData.class);
         userModel.analysisSlideMsg(userRoleMoveMsgData);
 

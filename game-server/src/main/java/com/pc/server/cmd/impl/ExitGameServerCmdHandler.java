@@ -19,7 +19,7 @@ public class ExitGameServerCmdHandler implements ServerCmdHandler {
     public void doHandle(Msg msg, Channel channel) {
         RoomServer roomServer = RoomCache.get(msg.getRoomId());
         // 移除房间内的用户
-        roomServer.getUser().invalidate(msg.getUserId());
+        roomServer.getUser().remove(msg.getUserId());
         // 告诉所有玩家 这个人走了， 移除改用户
         Msg msg1 = Msg.getMsg(ServerCmd.EXIT_GAME.getValue(), msg.getUserId(), null);
         roomServer.putMsg(msg1);

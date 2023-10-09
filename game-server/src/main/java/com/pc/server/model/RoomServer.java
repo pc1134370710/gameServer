@@ -57,16 +57,17 @@ public class RoomServer {
     /**
      * 房间内的用户， key : userId
      */
-    private Cache<String, UserModel> user = Caffeine.newBuilder().build();
+//    private Cache<String, UserModel> user = Caffeine.newBuilder().build();
+    private Map<String, UserModel> user = new ConcurrentHashMap<>();
 
     /**
      * 房间内技能情况
      */
-    private Cache<String, SkillMsgData> skillMsgDataMap = Caffeine.newBuilder().build();
+    private Map<String, SkillMsgData> skillMsgDataMap = new ConcurrentHashMap<>();
     /**
      * 电脑玩家
      */
-    private Cache<String, UserRoleMsgData> npcUser = Caffeine.newBuilder().build();
+    private Map<String, UserRoleMsgData> npcUser = new ConcurrentHashMap<>();
 
 
     private BlockingQueue<Msg> queue = new LinkedBlockingQueue<>();
@@ -204,9 +205,9 @@ public class RoomServer {
                     return;
                 }
                 // 场上电脑 少于5个
-                if (npcUser.estimatedSize() < 2) {
+                if (npcUser.size() < 2) {
                     // 添加
-                    for (int i = 0; i < 2 - npcUser.estimatedSize(); i++) {
+                    for (int i = 0; i < 2 - npcUser.size(); i++) {
                         UserRoleMsgData userRoleMsgData = new UserRoleMsgData().initNpc();
                         userRoleMsgData.setUserId("电脑" + System.currentTimeMillis());
                         npcUser.put(userRoleMsgData.getUserId(), userRoleMsgData);
@@ -215,7 +216,7 @@ public class RoomServer {
                     }
                 }
 
-                Iterator<Map.Entry<String, UserRoleMsgData>> iterator = npcUser.asMap().entrySet().iterator();
+                Iterator<Map.Entry<String, UserRoleMsgData>> iterator = npcUser.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, UserRoleMsgData> next = iterator.next();
                     if (next.getValue().getIsOver().equals(Boolean.TRUE)) {
@@ -230,7 +231,7 @@ public class RoomServer {
                     }
                     // 如果该电脑玩家已经在 追踪 玩家了
                     if (next.getValue().getChasingUserId() != null) {
-                        UserModel userModel = user.getIfPresent(next.getValue().getChasingUserId());
+                        UserModel userModel = user.get(next.getValue().getChasingUserId());
                         if (userModel == null) {
                             next.getValue().setChasingUserId(null);
                             // 为空的情况， 可能是玩家 中途退出了游戏
@@ -245,7 +246,7 @@ public class RoomServer {
                     } else {
                         // 获取所有符合追踪的玩家
                         List<UserModel> list = new ArrayList<>();
-                        user.asMap().forEach((ku, vu) -> {
+                        user.forEach((ku, vu) -> {
                             int distance = next.getValue().distanceCalculator(vu.getUserRoleMsgData().getUserX(), vu.getUserRoleMsgData().getUserY());
                             if (distance <= Constant.senseRange) {
                                 list.add(vu);
@@ -273,7 +274,7 @@ public class RoomServer {
             // 全部就绪， 并且 初始化房间
             if (checkUserIsOk() && isInit.get()) {
                 Map<String, UserModel> temp = new ConcurrentHashMap<>();
-                user.asMap().forEach((k, v) -> {
+                user.forEach((k, v) -> {
                     UserRoleMsgData userRoleMsgData = v.getUserRoleMsgData();
                     if (userRoleMsgData.getMp() < 100) {
                         userRoleMsgData.setMp(userRoleMsgData.getMp() + 10);
@@ -296,7 +297,7 @@ public class RoomServer {
      */
     private void checkMoveSkill() {
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(() -> {
-            Iterator<Map.Entry<String, SkillMsgData>> iterator = skillMsgDataMap.asMap().entrySet().iterator();
+            Iterator<Map.Entry<String, SkillMsgData>> iterator = skillMsgDataMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, SkillMsgData> entry = iterator.next();
                 SkillMsgData skillMsgData = entry.getValue();
@@ -317,7 +318,7 @@ public class RoomServer {
                 }
             }
             // 发送移动技能消息给用户
-            skillMsgDataMap.asMap().forEach((k, v) -> {
+            skillMsgDataMap.forEach((k, v) -> {
                 Msg msg = Msg.getMsg(ServerCmd.SKILL_MOVE.getValue(), v.getUserId(), v);
                 putTaskMsg(msg);
             });
@@ -332,7 +333,7 @@ public class RoomServer {
      * @return true : 技能已经失效， false :  技能未被失效
      */
     private boolean detectSkillHit(SkillMsgData skillMsgData) {
-        Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+        Set<Map.Entry<String, UserModel>> entries = user.entrySet();
         for (Map.Entry<String, UserModel> e : entries) {
             UserModel userModel = e.getValue();
             UserRoleMsgData userRoleMsgData = userModel.getUserRoleMsgData();
@@ -345,14 +346,14 @@ public class RoomServer {
                 }
             }
         }
-        UserRoleMsgData npcUserMsaData = npcUser.getIfPresent(skillMsgData.getUserId());
+        UserRoleMsgData npcUserMsaData = npcUser.get(skillMsgData.getUserId());
         if (npcUserMsaData != null) {
             // 电脑玩家 对电脑玩家不生效
             // 返回 false 代表技能没有失效
             return false;
         }
         // 检测电脑玩家
-        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.asMap().entrySet();
+        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
         for (Map.Entry<String, UserRoleMsgData> e : npc) {
             UserRoleMsgData userRoleMsgData = e.getValue();
             //  技能跟玩家站在一条线上, 并且玩家还没有死， 发送碰撞
@@ -416,7 +417,7 @@ public class RoomServer {
                 // 全部就绪， 并且未初始化房间
                 if (checkUserIsOk() && !isInit.get()) {
                     // 如果已经初始化号房间了，那么就可以开始 初始化用户角色
-                    user.asMap().forEach((key, value) -> {
+                    user.forEach((key, value) -> {
                         UserRoleMsgData userRoleMoveMsgData = value.getUserRoleMsgData();
                         userRoleMoveMsgData.setUserId(key);
                         Msg msg = Msg.getMsg(ServerCmd.START_GAME.getValue(), userRoleMoveMsgData.getUserId(), userRoleMoveMsgData);
@@ -454,7 +455,7 @@ public class RoomServer {
                 try {
                     // take 发动攻击的人
                     UserRoleMsgData take = attackQueue.take();
-                    Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+                    Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                     for (Map.Entry<String, UserModel> entry : entries) {
                         if (!entry.getKey().equals(take.getUserId())) {
                             // TODO  矩形碰撞 应该 拿 玩家的非攻击状态下的 矩形， 不然一定概率性会出现， 玩家在攻击时， 被攻击的范围增大
@@ -493,7 +494,7 @@ public class RoomServer {
                     // 电脑玩家不可以 对电脑玩家造成伤害哦
                     if (!take.getIsNpc()) {
                         //  检测电脑玩家
-                        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.asMap().entrySet();
+                        Set<Map.Entry<String, UserRoleMsgData>> npc = npcUser.entrySet();
                         for (Map.Entry<String, UserRoleMsgData> entry : npc) {
                             if (take.getUserY().equals(entry.getValue().getUserY())
                                     && take.attackRectangle().intersects(entry.getValue().commonRectangle())
@@ -539,8 +540,8 @@ public class RoomServer {
         if (isOK.get()) {
             return true;
         }
-        if (user.estimatedSize() == maxUserSize) {
-            Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+        if (user.size() == maxUserSize) {
+            Set<Map.Entry<String, UserModel>> entries = user.entrySet();
             int cnt = 0;
             for (Map.Entry<String, UserModel> entry : entries) {
                 cnt += entry.getValue().getStart();
@@ -561,14 +562,14 @@ public class RoomServer {
         threadPoolExecutors.execute(() -> {
             while (true) {
                 // 房间可用
-                if (user.estimatedSize() == 0 && isInit.get()) {
+                if (user.size() == 0 && isInit.get()) {
                     log.info("cmd =checkRoom | msg = 重置房间 | roomId ={}", id);
                     isInit.set(false);
                     isOK.set(false);
-                    user.cleanUp();
+                    user.clear();
                     queue.clear();
                     attackQueue.clear();
-                    npcUser.cleanUp();
+                    npcUser.clear();
                     // 给所有连接用户发送 刷新房间消息
                 }
                 ThreadUtil.sleep(5000);
@@ -585,7 +586,7 @@ public class RoomServer {
         threadPoolExecutors.execute(() -> {
             while (true) {
                 Msg msg = getMsg();
-                Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+                Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                 for (Map.Entry<String, UserModel> entry : entries) {
                     entry.getValue().getChannel().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
                 }
@@ -601,7 +602,7 @@ public class RoomServer {
             while (true) {
                 try {
                     Msg msg = taskMsgQueue.take();
-                    Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+                    Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                     for (Map.Entry<String, UserModel> entry : entries) {
                         entry.getValue().getTaskChannel().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
                     }
@@ -618,7 +619,7 @@ public class RoomServer {
             while (true) {
                 try {
                     Msg msg = chatMsgQueue.take();
-                    Set<Map.Entry<String, UserModel>> entries = user.asMap().entrySet();
+                    Set<Map.Entry<String, UserModel>> entries = user.entrySet();
                     for (Map.Entry<String, UserModel> entry : entries) {
                         entry.getValue().getChatChannel().writeAndFlush(RpcProtocol.getRpcProtocol(msg));
                     }
